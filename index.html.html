@@ -1,0 +1,2864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Livio Material Tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#0D1B3E;--steel:#1C3F6E;--sky:#2E7FD9;--skyl:#D6E8FA;
+  --orange:#E07B39;--orl:#FDE9D9;--green:#2A7A4B;--grnl:#D6EEE0;
+  --red:#C0392B;--redl:#FADBD8;--gold:#D4A017;--gldl:#FEF3CD;
+  --purple:#6C3483;--purl:#E8DAEF;--teal:#0E7C7B;--teal-l:#D0F0EF;
+  --white:#fff;--grey:#F4F7FB;--border:#DEE6EF;--muted:#6B7D8F;--text:#1A2B4A;
+  --shadow:0 2px 12px rgba(13,27,62,.10);--shadow-lg:0 8px 32px rgba(13,27,62,.16);
+}
+*{box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#EBF0F7;color:var(--text);min-height:100vh}
+nav{background:var(--navy);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.nav-brand{display:flex;align-items:center;gap:12px}
+.nav-bar{width:4px;height:32px;background:var(--orange);border-radius:2px}
+.nav-title{font-size:15px;font-weight:700;color:#fff;letter-spacing:.3px}
+.nav-sub{font-size:10px;color:#8BA4C0;margin-top:1px}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-btn{background:none;border:none;color:#9DB4CC;padding:6px 14px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.nav-btn:hover{color:#fff;background:rgba(255,255,255,.1)}
+.nav-btn.active{background:var(--sky);color:#fff}
+.btn-add-nav{background:var(--orange);color:#fff;border:none;padding:7px 18px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-add-nav:hover{background:#c96a28}
+.toast{position:fixed;top:68px;right:16px;z-index:9999;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;box-shadow:var(--shadow-lg);transform:translateY(-8px);opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--green)}.toast.error{background:var(--red)}
+main{max-width:1440px;margin:0 auto;padding:24px 20px}
+.view{display:none}.view.active{display:block}
+.card{background:#fff;border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.card-p{padding:20px}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.page-title{font-size:22px;font-weight:700;color:var(--navy)}
+.page-sub{font-size:13px;color:var(--muted);margin-top:2px}
+.btn{border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;padding:8px 18px;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--navy);color:#fff}.btn-primary:hover{background:var(--steel)}
+.btn-orange{background:var(--orange);color:#fff}.btn-orange:hover{background:#c96a28}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#1e5c37}
+.btn-purple{background:var(--purple);color:#fff}.btn-purple:hover{background:#5a2a70}
+.btn-teal{background:var(--teal);color:#fff}.btn-teal:hover{background:#095f5e}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#a33025}
+.btn-ghost{background:#f0f4f8;color:var(--muted);border:1.5px solid var(--border)}.btn-ghost:hover{border-color:#aaa;color:var(--text)}
+.btn-sky{background:var(--sky);color:#fff}.btn-sky:hover{background:#1a6bbf}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:6px}
+.btn-xs{padding:3px 9px;font-size:11px;border-radius:5px}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.form-group label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.form-group input,.form-group select,.form-group textarea{border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;color:var(--text);transition:border-color .15s;background:#fff}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--sky)}
+.form-group textarea{resize:vertical;min-height:72px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-full{grid-column:1/-1}
+.input-with-unit{display:flex;gap:6px}
+.input-with-unit input{flex:1}
+.input-with-unit select{width:110px;flex-shrink:0}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.badge-ok{background:var(--grnl);color:var(--green)}
+.badge-missing{background:var(--redl);color:var(--red)}
+.badge-submitted{background:var(--gldl);color:#7a5200}
+.badge-rejected{background:var(--redl);color:#8b1a1a}
+.badge-approved{background:var(--grnl);color:var(--green)}
+.stage-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600}
+.kpi-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:600px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:#fff;border-radius:12px;padding:14px 16px;box-shadow:var(--shadow);border-top:4px solid var(--border)}
+.kpi-val{font-size:28px;font-weight:700;line-height:1}
+.kpi-lbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.kpi-navy{border-color:var(--navy)}.kpi-navy .kpi-val{color:var(--navy)}
+.kpi-blue{border-color:var(--sky)}.kpi-blue .kpi-val{color:var(--sky)}
+.kpi-green{border-color:var(--green)}.kpi-green .kpi-val{color:var(--green)}
+.kpi-red{border-color:var(--red)}.kpi-red .kpi-val{color:var(--red)}
+.kpi-orange{border-color:var(--orange)}.kpi-orange .kpi-val{color:var(--orange)}
+.kpi-teal{border-color:var(--teal)}.kpi-teal .kpi-val{color:var(--teal)}
+.kpi-purple{border-color:var(--purple)}.kpi-purple .kpi-val{color:var(--purple)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--navy)}
+thead th{color:#8BA4C0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;padding:10px 14px;text-align:left;white-space:nowrap}
+tbody tr{border-bottom:1px solid #f0f4f8;cursor:pointer;transition:background .12s}
+tbody tr:nth-child(even){background:#fafcff}
+tbody tr:hover{background:#eef5ff}
+tbody td{padding:11px 14px;vertical-align:middle}
+.prog-wrap{display:flex;align-items:center;gap:8px}
+.prog-track{flex:1;height:6px;background:#e8ecf2;border-radius:3px;overflow:hidden;min-width:60px}
+.prog-fill{height:100%;border-radius:3px;background:var(--sky);transition:width .4s}
+.prog-pct{font-size:10px;font-weight:600;color:var(--muted);min-width:28px}
+.pipeline-grid{display:grid;gap:6px;margin-bottom:4px}
+.pipeline-cell{background:#fff;border-radius:8px;padding:10px 6px;text-align:center;box-shadow:var(--shadow);border-top:3px solid var(--border)}
+.pipeline-cell .stage-num{font-size:20px;font-weight:700}
+.pipeline-cell .stage-lbl{font-size:9px;color:var(--muted);margin-top:3px;line-height:1.3}
+.tabs-bar{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:22px;overflow-x:auto}
+.tab-btn{background:none;border:none;padding:12px 20px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:6px}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--sky);border-bottom-color:var(--sky)}
+.tab-badge{background:var(--redl);color:var(--red);font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px}
+.tab-badge.neutral{background:#e8ecf2;color:var(--muted)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:700px){.detail-grid{grid-template-columns:1fr}}
+.info-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f5f7fa;font-size:13px}
+.info-row:last-child{border-bottom:none}
+.info-key{color:var(--muted);font-weight:500}
+.info-val{color:var(--navy);font-weight:600;text-align:right;max-width:220px}
+.stage-row{background:#fff;border-radius:12px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:10px;border-left:4px solid #e8ecf2;transition:border-color .2s}
+.stage-row.done{border-left-color:var(--green)}
+.stage-header{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none}
+.stage-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.stage-info{flex:1}
+.stage-name-text{font-weight:600;font-size:14px}
+.stage-date-text{font-size:11px;color:var(--muted);margin-top:2px}
+.stage-toggle{padding:5px 14px;border-radius:20px;border:none;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+.st-done{background:var(--grnl);color:var(--green)}.st-done:hover{background:#b8ddc8}
+.st-pending{background:var(--orl);color:var(--orange)}.st-pending:hover{background:#fad5be}
+.st-na{background:#e8ecf2;color:var(--muted)}.st-na:hover{background:#d8dfe8}
+.stage-expand{font-size:12px;color:var(--muted);transition:transform .2s;margin-left:4px}
+.stage-expand.open{transform:rotate(180deg)}
+.stage-body{display:none;padding:0 16px 14px;border-top:1px solid #f0f4f8}
+.stage-body.open{display:block}
+.cert-card{background:#fff;border-radius:12px;box-shadow:var(--shadow);padding:16px;margin-bottom:10px;border-left:4px solid #e8ecf2}
+.cert-card.cert-Missing{border-left-color:var(--red)}
+.cert-card.cert-Submitted{border-left-color:var(--gold)}
+.cert-card.cert-Approved{border-left-color:var(--green)}
+.cert-card.cert-Rejected{border-left-color:var(--red)}
+.cert-file-link{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--teal);background:var(--teal-l);padding:3px 10px;border-radius:6px;text-decoration:none;margin-top:6px}
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:14px}
+.doc-card{background:#fff;border-radius:12px;box-shadow:var(--shadow);padding:14px;display:flex;flex-direction:column;gap:10px}
+.doc-img-preview{width:100%;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--border)}
+.doc-download{display:block;text-align:center;background:var(--teal-l);color:var(--teal);font-size:11px;font-weight:600;padding:6px;border-radius:7px;text-decoration:none}
+.note-card{background:#fff;border-radius:12px;box-shadow:var(--shadow);padding:14px;display:flex;gap:12px;margin-bottom:10px}
+.note-avatar{width:34px;height:34px;border-radius:50%;background:var(--sky);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.alert-item{display:flex;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid;margin-bottom:8px;cursor:pointer}
+.alert-critical{background:var(--redl);border-color:#f5c0ba;color:var(--red)}
+.alert-warning{background:var(--gldl);border-color:#f5dea0;color:#7a5200}
+.modal-overlay{position:fixed;inset:0;background:rgba(13,27,62,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#fff;border-radius:18px;box-shadow:var(--shadow-lg);width:100%;max-width:660px;max-height:90vh;overflow-y:auto;padding:28px}
+.modal-title{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+.filter-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:18px}
+.filter-pill{background:#fff;border:1.5px solid var(--border);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .15s}
+.filter-pill:hover{border-color:var(--sky);color:var(--sky)}
+.filter-pill.active{background:var(--navy);border-color:var(--navy);color:#fff}
+.search-input{flex:1;min-width:200px;padding:7px 14px;border:1.5px solid var(--border);border-radius:20px;font-size:13px;font-family:inherit;color:var(--text)}
+.search-input:focus{outline:none;border-color:var(--sky)}
+.empty-state{text-align:center;padding:60px 20px}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-title{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.empty-sub{font-size:13px;color:var(--muted)}
+.stage-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.stage-bar-label{font-size:11px;color:var(--text);width:170px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage-bar-track{flex:1;height:8px;background:#e8ecf2;border-radius:4px;overflow:hidden}
+.stage-bar-fill{height:100%;border-radius:4px;transition:width .5s}
+.stage-bar-count{font-size:11px;font-weight:600;color:var(--muted);min-width:20px;text-align:right}
+.upload-area{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;position:relative;transition:border-color .15s}
+.upload-area:hover{border-color:var(--sky)}
+.upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.delete-btn{color:var(--red);font-size:11px;cursor:pointer;padding:2px 6px;border-radius:4px;border:none;background:none;opacity:.6;transition:opacity .15s}
+.delete-btn:hover{opacity:1}
+.settings-section{background:#fff;border-radius:14px;box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.settings-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.editable-list-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;border:1.5px solid var(--border);margin-bottom:7px;background:#fafcff}
+.editable-list-item input{flex:1;border:none;background:transparent;font-size:13px;font-family:inherit;color:var(--text);outline:none}
+.editable-list-item input:focus{color:var(--navy)}
+.drag-handle{color:#ccc;cursor:grab;font-size:16px;padding:0 4px}
+/* QUOTE SECTION */
+.quote-section{background:#fff;border-radius:14px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:12px}
+.quote-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.quote-header-title{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+.quote-body{padding:0 18px 16px;display:none}
+.quote-body.open{display:block}
+.quote-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #f5f7fa;font-size:13px}
+.quote-row:last-child{border-bottom:none}
+.quote-row-hdr{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;padding:6px 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.quote-input{border:1.5px solid var(--border);border-radius:6px;padding:6px 9px;font-size:12px;font-family:inherit;width:100%;background:#fff}
+.quote-input:focus{outline:none;border-color:var(--sky)}
+.final-quote-banner{background:linear-gradient(135deg,#0D1B3E,#1C3F6E);border-radius:10px;padding:14px 16px;margin-top:10px;color:#fff}
+.fqb-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#8BA4C0;margin-bottom:8px}
+.fqb-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:4px}
+.fqb-label{color:#C8D6E5}
+.fqb-val{font-weight:700;color:#fff;font-variant-numeric:tabular-nums}
+.fqb-total{font-size:16px;font-weight:700;color:var(--gold)}
+/* Stage final quote link */
+.stage-fq-box{background:var(--navy);border-radius:10px;padding:14px 16px;margin-top:14px;color:#fff}
+.sfq-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#8BA4C0;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.sfq-linked{font-size:11px;color:var(--gold)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#c0cfe0;border-radius:3px}
+
+.color-swatch-row{display:flex;align-items:center;gap:8px}
+.color-swatch-row .swatch{width:28px;height:28px;border-radius:6px;border:1.5px solid var(--border);flex-shrink:0;cursor:pointer;transition:transform .15s}
+.color-swatch-row .swatch:hover{transform:scale(1.15)}
+.color-code-input{font-family:monospace;font-size:12px;width:90px}
+.po-badge-yes{background:#D6EEE0;color:#2A7A4B;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.po-badge-no{background:#FADBD8;color:#C0392B;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.po-badge-partial{background:#FEF3CD;color:#D4A017;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.po-section{background:#fff;border-radius:12px;box-shadow:var(--shadow);padding:18px;margin-bottom:14px;border-left:4px solid var(--sky)}
+.po-doc-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f7fa;font-size:13px}
+.po-doc-item:last-child{border-bottom:none}
+
+/* Quote enhancements */
+.quote-grid{display:grid;grid-template-columns:2.2fr .7fr .6fr 1.1fr 1.1fr 1.1fr auto;gap:6px;align-items:center}
+.quote-grid-hdr{display:grid;grid-template-columns:2.2fr .7fr .6fr 1.1fr 1.1fr 1.1fr auto;gap:6px;padding:5px 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.quote-totals-box{background:var(--navy);border-radius:10px;padding:14px 16px;margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qt-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0}
+.qt-label{font-size:12px;color:#8BA4C0}
+.qt-val{font-size:13px;font-weight:600;color:#fff}
+.qt-total-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0 0;border-top:1px solid rgba(255,255,255,.15);margin-top:4px;grid-column:1/-1}
+.qt-total-label{font-size:13px;font-weight:700;color:#C8D6E5}
+.qt-total-val{font-size:18px;font-weight:700;color:var(--gold)}
+.quote-input-sm{border:1.5px solid var(--border);border-radius:6px;padding:5px 7px;font-size:12px;font-family:inherit;width:100%;background:#fff;min-width:0}
+.quote-input-sm:focus{outline:none;border-color:var(--sky)}
+.currency-select{border:1.5px solid var(--border);border-radius:6px;padding:5px 4px;font-size:11px;font-family:inherit;background:var(--white,#fff);color:var(--text);cursor:pointer;width:72px;flex-shrink:0}
+.currency-select:focus{outline:none;border-color:var(--sky)}
+.quote-attach-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--border);margin-top:10px}
+.quote-pdf-chip{display:inline-flex;align-items:center;gap:5px;background:var(--teal-l);color:var(--teal);font-size:11px;padding:4px 10px;border-radius:6px;text-decoration:none;font-weight:600}
+.quote-pdf-chip:hover{background:#b0e8e7}
+/* Blocker box */
+.blocker-box{background:#fffbeb;border:1.5px solid #fbbf24;border-radius:10px;padding:12px 14px;margin-top:12px}
+.blocker-box-title{font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.blocker-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.blocker-item input{flex:1;border:1.5px solid #fde68a;border-radius:6px;padding:6px 9px;font-size:12px;font-family:inherit;background:#fff}
+.blocker-item input:focus{outline:none;border-color:#f59e0b}
+.blocker-resolved{text-decoration:line-through;opacity:.5}
+/* Estimated date chip */
+.est-date-chip{display:inline-flex;align-items:center;gap:5px;background:var(--purl);color:var(--purple);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:3px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-bar"></div>
+    <div>
+      <div class="nav-title">LIVIO MATERIAL TRACKER</div>
+      <div class="nav-sub">Data Center · India → California</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <button class="nav-btn active" id="navDash" onclick="showView('dashboard')">Dashboard</button>
+    <button class="nav-btn" id="navList" onclick="showView('list')">All Materials</button>
+    <button class="nav-btn" id="navSettings" onclick="showView('settings')">⚙ Settings</button>
+    <button class="btn-add-nav" onclick="openAddModal()">+ Add Material</button>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<main>
+<!-- DASHBOARD -->
+<div class="view active" id="view-dashboard">
+  <div class="page-hdr">
+    <div><div class="page-title">Dashboard</div><div class="page-sub" id="dashSub">Loading...</div></div>
+    <button class="btn btn-orange" onclick="openAddModal()">+ Add Material</button>
+  </div>
+  <div class="kpi-grid" id="kpiGrid"></div>
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card card-p">
+        <div style="font-weight:700;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:8px">
+          <div style="width:4px;height:18px;background:var(--sky);border-radius:2px"></div>Pipeline — Materials by Stage
+        </div>
+        <div class="pipeline-grid" id="pipelineGrid" style="grid-template-columns:repeat(auto-fill,minmax(90px,1fr))"></div>
+        <div id="stageBars" style="margin-top:16px;padding-top:14px;border-top:1px solid #f0f4f8"></div>
+      </div>
+      <div class="card card-p">
+        <div style="font-weight:700;color:var(--navy);margin-bottom:12px">Recent Materials</div>
+        <div id="dashTable"></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card card-p">
+        <div style="font-weight:700;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px">
+          <div style="width:4px;height:18px;background:var(--red);border-radius:2px"></div>Critical Alerts
+        </div>
+        <div id="alertsPanel"></div>
+      </div>
+      <div class="card card-p">
+        <div style="font-weight:700;color:var(--navy);margin-bottom:14px">By Category</div>
+        <div id="catBreakdown"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIST -->
+<div class="view" id="view-list">
+  <div class="page-hdr">
+    <div><div class="page-title">All Materials</div><div class="page-sub" id="listSub"></div></div>
+    <button class="btn btn-orange" onclick="openAddModal()">+ Add Material</button>
+  </div>
+  <div class="filter-bar">
+    <input class="search-input" id="searchInput" placeholder="🔍  Search material, vendor..." oninput="renderList()">
+    <span style="font-size:11px;color:var(--muted);font-weight:600">CATEGORY:</span>
+    <div class="filter-pill active" data-cat="all" onclick="setCatFilter(this)">All</div>
+    <div id="catFilterPills"></div>
+  </div>
+  <div class="card" id="matTable"></div>
+</div>
+
+<!-- DETAIL -->
+<div class="view" id="view-detail">
+  <div id="detailHeader" style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"></div>
+  <div class="tabs-bar" id="tabsBar"></div>
+  <div id="tabContent"></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="view" id="view-settings">
+  <div class="page-hdr">
+    <div><div class="page-title">⚙ Settings</div><div class="page-sub">Manage categories, units, stages, certification types, finish types and colors</div></div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div class="settings-section">
+    <div class="settings-title">
+      <span style="background:var(--sky);color:#fff;width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">📂</span>
+      Material Categories <span style="font-size:11px;color:var(--muted);font-weight:400">(used in Add Material form)</span>
+    </div>
+    <div id="catList"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input id="newCatInput" placeholder="New category name..." style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;flex:1;font-family:inherit" onkeydown="if(event.key==='Enter')addCategory()">
+      <button class="btn btn-sky btn-sm" onclick="addCategory()">+ Add</button>
+    </div>
+  </div>
+
+  <!-- UNITS -->
+  <div class="settings-section">
+    <div class="settings-title">
+      <span style="background:var(--orange);color:#fff;width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">📐</span>
+      Quantity Units <span style="font-size:11px;color:var(--muted);font-weight:400">(dropdown in Add Material)</span>
+    </div>
+    <div id="unitList"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input id="newUnitInput" placeholder="New unit (e.g. pieces, rolls)..." style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;flex:1;font-family:inherit" onkeydown="if(event.key==='Enter')addUnit()">
+      <button class="btn btn-orange btn-sm" onclick="addUnit()">+ Add</button>
+    </div>
+  </div>
+
+  <!-- STAGES -->
+  <div class="settings-section">
+    <div class="settings-title">
+      <span style="background:var(--green);color:#fff;width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🔄</span>
+      Tracking Stages <span style="font-size:11px;color:var(--muted);font-weight:400">(applied to new materials — existing materials keep their stages)</span>
+    </div>
+    <div id="stageList"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input id="newStageInput" placeholder="New stage name..." style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;flex:1;font-family:inherit" onkeydown="if(event.key==='Enter')addStage()">
+      <button class="btn btn-green btn-sm" onclick="addStage()">+ Add Stage</button>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px">💡 Tip: The first stage is the "Not Ordered" equivalent. Changes apply to new materials only.</p>
+  </div>
+
+  <!-- CERT TYPES -->
+  <div class="settings-section">
+    <div class="settings-title">
+      <span style="background:var(--purple);color:#fff;width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">📋</span>
+      Certification Types <span style="font-size:11px;color:var(--muted);font-weight:400">(shown as dropdown when adding certifications)</span>
+    </div>
+    <div id="certTypeList"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input id="newCertTypeInput" placeholder="New certification type..." style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;flex:1;font-family:inherit" onkeydown="if(event.key==='Enter')addCertType()">
+      <button class="btn btn-purple btn-sm" onclick="addCertType()">+ Add</button>
+    </div>
+  </div>
+
+  <!-- SIZES -->
+  <div class="settings-section">
+    <div class="settings-title">
+      <span style="background:var(--sky);color:#fff;width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">📏</span>
+      Material Sizes <span style="font-size:11px;color:var(--muted);font-weight:400">(e.g. 1220x2440mm, 4x8ft)</span>
+    </div>
+    <div id="sizeList"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input id="newSizeInput" placeholder="New size (e.g. 1500x3000mm)..." style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;flex:1;font-family:inherit" onkeydown="if(event.key==='Enter')addSize()">
+      <button class="btn btn-sky btn-sm" onclick="addSize()">+ Add</button>
+    </div>
+  </div>
+
+  <!-- THICKNESSES -->
+  <div class="settings-section">
+    <div class="settings-title">
+      <span style="background:var(--steel);color:#fff;width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">⬛</span>
+      Material Thicknesses <span style="font-size:11px;color:var(--muted);font-weight:400">(e.g. 4mm, 10mm)</span>
+    </div>
+    <div id="thicknessList"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input id="newThicknessInput" placeholder="New thickness (e.g. 6mm)..." style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;flex:1;font-family:inherit" onkeydown="if(event.key==='Enter')addThickness()">
+      <button class="btn btn-primary btn-sm" onclick="addThickness()">+ Add</button>
+    </div>
+  </div>
+
+  <!-- CURRENCIES -->
+  <div class="settings-section">
+    <div class="settings-title">
+      <span style="background:var(--green);color:#fff;width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">💱</span>
+      Currencies <span style="font-size:11px;color:var(--muted);font-weight:400">(shown in Quotes tab)</span>
+    </div>
+    <div id="currencyList"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input id="newCurrencyInput" placeholder="New currency (e.g. JPY (¥))..." style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;flex:1;font-family:inherit" onkeydown="if(event.key==='Enter')addCurrency()">
+      <button class="btn btn-green btn-sm" onclick="addCurrency()">+ Add</button>
+    </div>
+  </div>
+
+  <!-- FINISH TYPES -->
+  <div class="settings-section">
+    <div class="settings-title">
+      <span style="background:var(--teal);color:#fff;width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">✨</span>
+      Finish Types <span style="font-size:11px;color:var(--muted);font-weight:400">(e.g. Matt, Glossy, Satin)</span>
+    </div>
+    <div id="finishList"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <input id="newFinishInput" placeholder="New finish type (e.g. Brushed, Textured)..." style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;flex:1;font-family:inherit" onkeydown="if(event.key==='Enter')addFinish()">
+      <button class="btn btn-teal btn-sm" onclick="addFinish()">+ Add</button>
+    </div>
+  </div>
+
+  <!-- COLORS -->
+  <div class="settings-section">
+    <div class="settings-title">
+      <span style="background:var(--purple);color:#fff;width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px">🎨</span>
+      Color Library <span style="font-size:11px;color:var(--muted);font-weight:400">(name + hex code — appears as dropdown in Add Material)</span>
+    </div>
+    <div id="colorLibList"></div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <input id="newColorName" placeholder="Color name (e.g. Champagne Gold)" style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;flex:1;min-width:160px;font-family:inherit">
+      <input id="newColorCode" type="color" value="#D4A017" style="border:1.5px solid var(--border);border-radius:8px;padding:4px;height:38px;width:54px;cursor:pointer">
+      <input id="newColorHex" placeholder="#D4A017" style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;width:96px;font-family:monospace" oninput="syncColorPicker(this.value)">
+      <button class="btn btn-purple btn-sm" onclick="addColor()">+ Add Color</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT PREVIEW MODAL -->
+<div class="modal-overlay" id="exportModal" style="display:none" onclick="if(event.target===this)closeExportModal()">
+<div class="modal" style="max-width:740px">
+  <div class="modal-title">📄 Export PDF — Review & Edit Stages</div>
+  <div class="modal-sub">Edit any stage status, estimated date, or notes before generating the PDF. Changes save to the tracker too.</div>
+  <div id="exportStageRows" style="margin-bottom:16px"></div>
+  <div style="background:var(--skyl);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--steel);margin-bottom:4px">
+    💡 The PDF will include all edits above. Status text shows as <strong>Done / Pending / N/A</strong> in clean formatting.
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeExportModal()">Cancel</button>
+    <button class="btn btn-green" onclick="closeExportModal();exportPDF()">Generate PDF →</button>
+  </div>
+</div>
+</div>
+</main>
+
+<!-- ADD MATERIAL MODAL -->
+<div class="modal-overlay" id="addModal" style="display:none" onclick="if(event.target===this)closeAddModal()">
+<div class="modal">
+  <div class="modal-title">Add New Material</div>
+  <div class="modal-sub">All details can be edited after saving</div>
+  <div class="form-row">
+    <div class="form-group form-full"><label>Material Name *</label><input id="am-name" placeholder="e.g. ACP Panel FR-A2 4mm"></div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="am-cat"></select>
+    </div>
+    <div class="form-group"><label>Vendor / Supplier</label><input id="am-vendor" placeholder="Supplier name"></div>
+    <div class="form-group">
+      <label>Quantity Required</label>
+      <div class="input-with-unit">
+        <input id="am-qty-req" placeholder="0">
+        <select id="am-unit-req"></select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Quantity Ordered</label>
+      <div class="input-with-unit">
+        <input id="am-qty-ord" placeholder="0">
+        <select id="am-unit-ord"></select>
+      </div>
+    </div>
+    <div class="form-group"><label>Order Date</label><input type="date" id="am-order-date"></div>
+    <div class="form-group"><label>Expected Delivery</label><input type="date" id="am-exp-del"></div>
+    <div class="form-group"><label>Actual Delivery</label><input type="date" id="am-act-del"></div>
+    <div class="form-group"><label>Cost (optional)</label><input id="am-cost" placeholder="e.g. $12,500"></div>
+    <div class="form-group form-full"><label>Notes</label><textarea id="am-notes" rows="2" placeholder="Initial notes..."></textarea></div>
+    <!-- FINISH & COLOR -->
+    <div class="form-group">
+      <label>Size <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none">(editable in Settings)</span></label>
+      <div style="display:flex;gap:6px">
+        <select id="am-size" style="flex:1" onchange="if(this.value==='Custom')document.getElementById('am-size-custom').style.display='block'"></select>
+        <input id="am-size-custom" placeholder="Custom size..." style="display:none;flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Thickness <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none">(editable in Settings)</span></label>
+      <div style="display:flex;gap:6px">
+        <select id="am-thickness" style="flex:1" onchange="if(this.value==='Custom')document.getElementById('am-thickness-custom').style.display='block'"></select>
+        <input id="am-thickness-custom" placeholder="Custom thickness..." style="display:none;flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Finish Type <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none">(editable in Settings)</span></label>
+      <select id="am-finish"></select>
+    </div>
+    <div class="form-group">
+      <label>Color</label>
+      <div class="color-swatch-row">
+        <div class="swatch" id="am-color-swatch" style="background:#cccccc" onclick="document.getElementById('am-color-picker').click()"></div>
+        <select id="am-color-select" onchange="colorSelectChanged('am')" style="flex:1"></select>
+        <input type="color" id="am-color-picker" style="position:absolute;opacity:0;width:1px;height:1px" onchange="colorPickerChanged('am',this.value)">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Color Code (Hex)</label>
+      <input id="am-color-code" class="color-code-input" placeholder="#RRGGBB" oninput="hexInputChanged('am',this.value)">
+    </div>
+    <!-- PO STATUS -->
+    <div class="form-group">
+      <label>Purchase Order Status</label>
+      <select id="am-po-status">
+        <option value="">— Select —</option>
+        <option value="PO Received">✅ PO Received</option>
+        <option value="PO Partial">⚠️ Partial PO</option>
+        <option value="PO Pending">🕐 PO Pending</option>
+        <option value="No PO Yet">❌ No PO Yet</option>
+      </select>
+    </div>
+  </div>
+  <div style="background:var(--skyl);border-radius:10px;padding:11px 14px;font-size:12px;color:var(--steel)">
+    💡 After saving: add quotes, certifications, documents, track stages, export PDF
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeAddModal()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveMaterial()">Save & Open →</button>
+  </div>
+</div>
+</div>
+
+<!-- ADD CERT MODAL -->
+<div class="modal-overlay" id="certModal" style="display:none" onclick="if(event.target===this)closeCertModal()">
+<div class="modal">
+  <div class="modal-title">Add Certification</div>
+  <div class="modal-sub">Track compliance documents for this material</div>
+  <div class="form-row">
+    <div class="form-group form-full">
+      <label>Certification Name * <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none">(editable — type your own or pick from type below)</span></label>
+      <input id="cm-name" placeholder="e.g. NFPA 285 Assembly Test Report">
+    </div>
+    <div class="form-group">
+      <label>Select Type to Auto-fill Name</label>
+      <select id="cm-type" onchange="certTypeSelected()">
+        <option value="">— pick to auto-fill name —</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="cm-status">
+        <option>Missing</option><option>Submitted</option><option>Received</option><option>Approved</option><option>Rejected</option>
+      </select>
+    </div>
+    <div class="form-group form-full">
+      <label>Attach File (PDF / JPG / PNG / DOC)</label>
+      <div class="upload-area">
+        <input type="file" id="cm-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="handleCertFile(this)">
+        <div id="cm-file-label" style="font-size:13px;color:var(--muted)">Drop file here or <strong style="color:var(--sky)">click to browse</strong></div>
+      </div>
+    </div>
+    <div class="form-group form-full"><label>Notes</label><textarea id="cm-notes" placeholder="Reference numbers, lab name, expiry date..."></textarea></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-ghost" onclick="closeCertModal()">Cancel</button>
+    <button class="btn btn-purple" onclick="saveCert()">Save Certification</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ── DEFAULT DATA ──────────────────────────────────────────────────────────────
+const DEFAULT_CATEGORIES = ['Exterior','Interior','Structural','Misc'];
+const DEFAULT_UNITS = ['sq ft','sq meter','sq yard','linear ft','linear meter','pieces','sets','kg','tons','liters','rolls','boxes','sheets','units'];
+const DEFAULT_STAGES = [
+  'Not Ordered','Ordered','Vendor Processing','Dispatched by Vendor',
+  'Received at Factory','Installed in Factory','Shipped to USA',
+  'Delivered on Site (USA)','Installed On Site'
+];
+const DEFAULT_SIZES = ['600x600mm','1220x2440mm','1220x3050mm','1500x3000mm','2000x4000mm','2440x1220mm','Custom'];
+const DEFAULT_THICKNESSES = ['2mm','3mm','4mm','5mm','6mm','8mm','10mm','12mm','15mm','18mm','20mm','25mm','Custom'];
+const DEFAULT_CURRENCIES = ['USD ($)','INR (₹)','EUR (€)','GBP (£)','AED (د.إ)','SGD (S$)','AUD (A$)','CAD (C$)'];
+const DEFAULT_FINISH_TYPES = ['Matt','Glossy','Satin','Brushed','Textured','Powder Coat','Anodized','Polished'];
+const DEFAULT_COLORS = [
+  {name:'Champagne Gold',hex:'#D4A017'},
+  {name:'Silver',hex:'#C0C0C0'},
+  {name:'White',hex:'#FFFFFF'},
+  {name:'Charcoal',hex:'#36454F'},
+  {name:'Black',hex:'#1C1C1C'},
+  {name:'Copper Bronze',hex:'#8B4513'},
+  {name:'Pearl White',hex:'#F0EAD6'},
+  {name:'Anthracite Grey',hex:'#383E42'},
+];
+const DEFAULT_CERT_TYPES = [
+  'Fire Rating (FR/A2)','NFPA 285 Compliance','ASTM E84 (Class A)',
+  'ASTM E136 Non-Combustibility','ICC-ES ESR','CBC Supplement',
+  'Mill Certificate','PVDF / AAMA 2605','WRB Compatibility Letter',
+  'Sealant Compatibility (ASTM C794)','MTC (Manufacturer Test Cert)',
+  'Certificate of Conformance','ISO 9001','FM 4880','ASTM E330','Other'
+];
+const STAGE_COLORS = ['#8B9DB0','#2E7FD9','#6D28D9','#6C3483','#0E7C7B','#065f46','#E07B39','#D4A017','#2A7A4B'];
+const CAT_BADGE_COLORS = ['#D6E8FA|#2E7FD9','#E8DAEF|#6C3483','#FDE9D9|#E07B39','#FEF3CD|#D4A017','#D6EEE0|#2A7A4B','#D0F0EF|#0E7C7B','#FADBD8|#C0392B'];
+
+function makeId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2) }
+
+// ── STORAGE ───────────────────────────────────────────────────────────────────
+function save(){ try{ window.storage.set('livio-db', JSON.stringify(DB)); }catch(e){ console.warn('storage save error',e); } }
+function defaultDB(){
+  return {materials:[],stages:[],certs:[],docs:[],notes:[],quotes:[],quoteMeta:{},blockers:{},vendors:[],
+    settings:{categories:[...DEFAULT_CATEGORIES],units:[...DEFAULT_UNITS],stages:[...DEFAULT_STAGES],certTypes:[...DEFAULT_CERT_TYPES],finishTypes:[...DEFAULT_FINISH_TYPES],colors:DEFAULT_COLORS.map(c=>({...c})),sizes:[...DEFAULT_SIZES],thicknesses:[...DEFAULT_THICKNESSES],currencies:[...DEFAULT_CURRENCIES]}};
+}
+let DB=defaultDB();
+function applyMigrations(){
+  if(!DB.settings) DB.settings={categories:[...DEFAULT_CATEGORIES],units:[...DEFAULT_UNITS],stages:[...DEFAULT_STAGES],certTypes:[...DEFAULT_CERT_TYPES],finishTypes:[...DEFAULT_FINISH_TYPES],colors:DEFAULT_COLORS.map(c=>({...c}))};
+  if(!DB.settings.finishTypes) DB.settings.finishTypes=[...DEFAULT_FINISH_TYPES];
+  if(!DB.settings.colors) DB.settings.colors=DEFAULT_COLORS.map(c=>({...c}));
+  if(!DB.settings.sizes) DB.settings.sizes=[...DEFAULT_SIZES];
+  if(!DB.settings.thicknesses) DB.settings.thicknesses=[...DEFAULT_THICKNESSES];
+  if(!DB.settings.currencies) DB.settings.currencies=[...DEFAULT_CURRENCIES];
+  if(!DB.quotes) DB.quotes=[];
+  if(!DB.vendors) DB.vendors=[];
+  if(!DB.blockers) DB.blockers={};
+  if(!DB.quoteMeta) DB.quoteMeta={};
+}
+async function initApp(){
+  try{ const s=await window.storage.get('livio-db'); if(s&&s.value) DB=JSON.parse(s.value); }catch(e){}
+  applyMigrations(); renderDash(); renderCatFilterPills();
+}
+
+let currentId=null, currentTab='overview', catFilter='all';
+let certFileData=null, certFileName='';
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+function getMaterial(id){ return DB.materials.find(m=>m.id===id) }
+function getStages(mid){ return DB.stages.filter(s=>s.materialId===mid).sort((a,b)=>a.order-b.order) }
+function getCerts(mid){ return DB.certs.filter(c=>c.materialId===mid) }
+function getDocs(mid){ return DB.docs.filter(d=>d.materialId===mid) }
+function getNotes(mid){ return DB.notes.filter(n=>n.materialId===mid).sort((a,b)=>b.createdAt-a.createdAt) }
+function getQuotes(mid,type){ return DB.quotes.filter(q=>q.materialId===mid&&q.quoteType===type) }
+function getFinalQuote(mid){ return getQuotes(mid,'final') }
+function getMissingCerts(mid){ return getCerts(mid).filter(c=>c.status==='Missing').length }
+function getProgress(mid){
+  const s=getStages(mid); const done=s.filter(x=>x.status==='done').length;
+  return {done,total:s.length,pct:s.length?Math.round(done/s.length*100):0};
+}
+function getCurrentStageName(mid){
+  const s=getStages(mid); const last=s.filter(x=>x.status==='done').pop();
+  return last?last.name:s[0]?.name||'Not Ordered';
+}
+function getCurrentStageIdx(mid){
+  const s=getStages(mid); const idx=s.findLastIndex(x=>x.status==='done'); return idx===-1?0:idx;
+}
+function getCatBadge(cat){
+  const cats=DB.settings.categories; const i=cats.indexOf(cat);
+  const colors=CAT_BADGE_COLORS; const pair=(colors[i%colors.length]||colors[0]).split('|');
+  return `background:${pair[0]};color:${pair[1]}`;
+}
+function getStageBadgeStyle(idx){
+  const c=STAGE_COLORS[idx%STAGE_COLORS.length];
+  return `background:${c}20;color:${c};padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;display:inline-block`;
+}
+function getStageColor(idx){ return STAGE_COLORS[idx%STAGE_COLORS.length] }
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function toast(msg,type='success'){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast show '+type;
+  setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+// ── VIEWS ─────────────────────────────────────────────────────────────────────
+function showView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  ['Dash','List','Settings'].forEach(n=>{
+    const el=document.getElementById('nav'+n); if(el) el.classList.remove('active');
+  });
+  if(v==='dashboard'){ document.getElementById('navDash').classList.add('active'); renderDash(); }
+  if(v==='list'){ document.getElementById('navList').classList.add('active'); renderList(); renderCatFilterPills(); }
+  if(v==='settings'){ document.getElementById('navSettings').classList.add('active'); renderSettings(); }
+}
+
+function openDetail(id){
+  currentId=id; currentTab='overview';
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-detail').classList.add('active');
+  ['Dash','List','Settings'].forEach(n=>{ const el=document.getElementById('nav'+n); if(el)el.classList.remove('active'); });
+  renderDetail();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function renderDash(){
+  const mats=DB.materials;
+  document.getElementById('dashSub').textContent=`${mats.length} materials tracked`;
+  const ordered=mats.filter(m=>getCurrentStageIdx(m.id)>0).length;
+  const inTransit=mats.filter(m=>getCurrentStageName(m.id)==='Shipped to USA').length;
+  const installed=mats.filter(m=>{const s=getCurrentStageName(m.id); return s===DB.settings.stages[DB.settings.stages.length-1];}).length;
+  const missCerts=mats.filter(m=>getMissingCerts(m.id)>0).length;
+  const notOrdered=mats.filter(m=>getCurrentStageIdx(m.id)===0).length;
+  const readyShip=mats.filter(m=>getCurrentStageName(m.id)==='Installed in Factory').length;
+
+  document.getElementById('kpiGrid').innerHTML=`
+    <div class="kpi kpi-navy"><div class="kpi-val">${mats.length}</div><div class="kpi-lbl">Total</div></div>
+    <div class="kpi kpi-blue"><div class="kpi-val">${ordered}</div><div class="kpi-lbl">Ordered</div></div>
+    <div class="kpi kpi-purple"><div class="kpi-val">${notOrdered}</div><div class="kpi-lbl">Not Ordered</div></div>
+    <div class="kpi kpi-teal"><div class="kpi-val">${inTransit}</div><div class="kpi-lbl">In Transit</div></div>
+    <div class="kpi kpi-orange"><div class="kpi-val">${readyShip}</div><div class="kpi-lbl">Ready to Ship</div></div>
+    <div class="kpi kpi-green"><div class="kpi-val">${installed}</div><div class="kpi-lbl">Installed ✓</div></div>
+    <div class="kpi kpi-red"><div class="kpi-val">${missCerts}</div><div class="kpi-lbl">Certs Missing</div></div>`;
+
+  const stages=DB.settings.stages;
+  const stageCounts=stages.map(s=>mats.filter(m=>getCurrentStageName(m.id)===s).length);
+  document.getElementById('pipelineGrid').innerHTML=stages.map((s,i)=>`
+    <div class="pipeline-cell" style="border-top-color:${getStageColor(i)}">
+      <div class="stage-num" style="color:${getStageColor(i)}">${stageCounts[i]}</div>
+      <div class="stage-lbl">${esc(s)}</div>
+    </div>`).join('');
+
+  const max=Math.max(...stageCounts,1);
+  document.getElementById('stageBars').innerHTML=stages.map((s,i)=>`
+    <div class="stage-bar-row">
+      <div class="stage-bar-label">${esc(s)}</div>
+      <div class="stage-bar-track"><div class="stage-bar-fill" style="width:${Math.round(stageCounts[i]/max*100)}%;background:${getStageColor(i)}"></div></div>
+      <div class="stage-bar-count">${stageCounts[i]}</div>
+    </div>`).join('');
+
+  if(mats.length===0){
+    document.getElementById('dashTable').innerHTML='<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-title">No materials yet</div><div class="empty-sub">Click + Add Material to get started</div></div>';
+  } else {
+    document.getElementById('dashTable').innerHTML=`
+      <table><thead><tr><th>Material</th><th>Category</th><th>Stage</th><th>Progress</th><th>Certs</th></tr></thead>
+      <tbody>${mats.slice(0,8).map(m=>{
+        const p=getProgress(m.id); const si=getCurrentStageIdx(m.id); const mc=getMissingCerts(m.id);
+        return `<tr onclick="openDetail('${m.id}')">
+          <td><div style="font-weight:600;color:var(--navy)">${esc(m.name)}</div>${m.vendor?`<div style="font-size:10px;color:var(--muted)">${esc(m.vendor)}</div>`:''}</td>
+          <td><span class="badge" style="${getCatBadge(m.category)}">${esc(m.category)}</span></td>
+          <td><span style="${getStageBadgeStyle(si)}">${esc(getCurrentStageName(m.id))}</span></td>
+          <td><div class="prog-wrap"><div class="prog-track"><div class="prog-fill" style="width:${p.pct}%"></div></div><div class="prog-pct">${p.pct}%</div></div></td>
+          <td>${mc>0?`<span class="badge badge-missing">⚠ ${mc}</span>`:getCerts(m.id).length>0?`<span class="badge badge-ok">✓ ${getCerts(m.id).length}</span>`:'<span style="font-size:11px;color:var(--muted)">—</span>'}</td>
+        </tr>`;}).join('')}
+      </tbody></table>`;
+  }
+
+  const alerts=[];
+  mats.forEach(m=>{ if(getMissingCerts(m.id)>0) alerts.push({title:m.name,detail:`${getMissingCerts(m.id)} cert(s) missing`,type:'critical',id:m.id}); });
+  document.getElementById('alertsPanel').innerHTML=alerts.length?alerts.slice(0,6).map(a=>`
+    <div class="alert-item alert-${a.type}" onclick="openDetail('${a.id}')">
+      <div style="font-size:16px">🚨</div>
+      <div><div style="font-size:12px;font-weight:700">${esc(a.title)}</div><div style="font-size:11px;opacity:.8">${a.detail}</div></div>
+    </div>`).join(''):`<div style="text-align:center;padding:20px 0"><div style="font-size:28px">✅</div><div style="font-size:13px;color:var(--green);font-weight:600;margin-top:6px">All clear</div></div>`;
+
+  const cats=DB.settings.categories;
+  document.getElementById('catBreakdown').innerHTML=cats.map((c,i)=>{
+    const n=mats.filter(m=>m.category===c).length; const pct=mats.length?Math.round(n/mats.length*100):0;
+    const col=(CAT_BADGE_COLORS[i%CAT_BADGE_COLORS.length]||CAT_BADGE_COLORS[0]).split('|')[1];
+    return `<div class="stage-bar-row" style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:6px;width:120px;flex-shrink:0">
+        <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>
+        <span style="font-size:12px">${esc(c)}</span>
+      </div>
+      <div class="stage-bar-track"><div class="stage-bar-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div class="stage-bar-count">${n}</div>
+    </div>`;}).join('');
+}
+
+// ── LIST VIEW ─────────────────────────────────────────────────────────────────
+function renderCatFilterPills(){
+  const cats=DB.settings.categories;
+  document.getElementById('catFilterPills').innerHTML=cats.map(c=>`
+    <div class="filter-pill ${catFilter===c?'active':''}" data-cat="${esc(c)}" onclick="setCatFilter(this)" style="display:inline-block;margin:0 2px">${esc(c)}</div>`).join('');
+}
+function setCatFilter(el){
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active'); catFilter=el.dataset.cat; renderList();
+}
+function renderList(){
+  const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
+  const mats=DB.materials.filter(m=>{
+    const mq=!q||m.name.toLowerCase().includes(q)||(m.vendor||'').toLowerCase().includes(q);
+    const mc=catFilter==='all'||m.category===catFilter; return mq&&mc;
+  });
+  document.getElementById('listSub').textContent=`${mats.length} of ${DB.materials.length} materials`;
+  if(!mats.length){ document.getElementById('matTable').innerHTML='<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">No results</div></div>'; return; }
+  document.getElementById('matTable').innerHTML=`
+    <table><thead><tr><th>Material</th><th>Category</th><th>Vendor</th><th>Qty</th><th>Color</th><th>Stage</th><th style="min-width:120px">Progress</th><th>Certs</th><th>PO Status</th><th>Exp. Delivery</th></tr></thead>
+    <tbody>${mats.map(m=>{
+      const p=getProgress(m.id); const si=getCurrentStageIdx(m.id); const mc=getMissingCerts(m.id);
+      const qty=m.qtyRequired?`${esc(m.qtyRequired)} ${esc(m.unitRequired||'')}`.trim():'—';
+      return `<tr onclick="openDetail('${m.id}')">
+        <td><div style="font-weight:600;color:var(--navy)">${esc(m.name)}</div>${m.vendor?`<div style="font-size:10px;color:var(--muted)">${esc(m.vendor)}</div>`:''}</td>
+        <td><span class="badge" style="${getCatBadge(m.category)}">${esc(m.category)}</span></td>
+        <td style="font-size:12px;color:var(--muted)">${esc(m.vendor||'—')}</td>
+        <td style="font-size:12px;font-family:monospace">${qty}</td>
+        <td>${m.colorHex?`<div style="display:flex;align-items:center;gap:5px"><div style="width:12px;height:12px;border-radius:3px;background:${esc(m.colorHex)};border:1px solid #ccc;flex-shrink:0"></div><span style="font-size:11px;color:var(--muted)">${esc(m.colorName||m.colorHex)}</span></div>`:'<span style="font-size:11px;color:var(--muted)">—</span>'}</td>
+        <td><span style="${getStageBadgeStyle(si)}">${esc(getCurrentStageName(m.id))}</span></td>
+        <td><div class="prog-wrap"><div class="prog-track"><div class="prog-fill" style="width:${p.pct}%"></div></div><div class="prog-pct">${p.pct}%</div></div></td>
+        <td>${mc>0?`<span class="badge badge-missing">⚠ ${mc}</span>`:getCerts(m.id).length>0?`<span class="badge badge-ok">✓ ${getCerts(m.id).length}</span>`:'<span style="font-size:11px;color:var(--muted)">none</span>'}</td>
+        <td>${m.poStatus?`<span class="${m.poStatus==='PO Received'?'po-badge-yes':m.poStatus==='No PO Yet'?'po-badge-no':'po-badge-partial'}">${esc(m.poStatus)}</span>`:'<span style="font-size:11px;color:var(--muted)">—</span>'}</td>
+        <td style="font-size:12px;color:var(--muted)">${m.expectedDelivery||'—'}</td>
+      </tr>`;}).join('')}
+    </tbody></table>`;
+}
+
+// ── DETAIL ────────────────────────────────────────────────────────────────────
+function renderDetail(){
+  const m=getMaterial(currentId); if(!m){ showView('list'); return; }
+  const mc=getMissingCerts(currentId);
+  document.getElementById('detailHeader').innerHTML=`
+    <div style="display:flex;align-items:flex-start;gap:14px">
+      <button class="btn btn-ghost btn-sm" onclick="showView('list')" style="margin-top:4px">← Back</button>
+      <div>
+        <div style="font-size:22px;font-weight:700;color:var(--navy)">${esc(m.name)}</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:5px">
+          <span class="badge" style="${getCatBadge(m.category)}">${esc(m.category)}</span>
+          ${m.vendor?`<span style="font-size:12px;color:var(--muted)">${esc(m.vendor)}</span>`:''}
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="btn btn-green btn-sm" onclick="openExportModal()">📄 Export PDF</button>
+      <button class="btn btn-ghost btn-sm" onclick="editMaterial()" style="color:var(--sky)">Edit</button>
+      <button class="btn btn-ghost btn-sm" onclick="deleteMaterial()" style="color:var(--red)">Delete</button>
+    </div>`;
+
+  const poDocs=(getMaterial(currentId)?.poDocs||[]);
+  const TABS=[
+    {key:'overview',label:'Overview'},
+    {key:'quotes',label:'Quotes',badge:(getQuotes(currentId,'received').length+getQuotes(currentId,'final').length)||0,bn:'neutral'},
+    {key:'status',label:'Status Tracking'},
+    {key:'certs',label:'Certifications',badge:mc||0,bn:mc?'alert':'neutral'},
+    {key:'po',label:'Purchase Order',badge:poDocs.length||0,bn: getMaterial(currentId)?.poStatus==='No PO Yet'||!getMaterial(currentId)?.poStatus?'alert':'neutral'},
+    {key:'vendors',label:'Vendor Database',badge:getVendors(currentId).length||0,bn:'neutral'},
+    {key:'docs',label:'Documents',badge:getDocs(currentId).length||0,bn:'neutral'},
+    {key:'notes',label:'Notes',badge:getNotes(currentId).length||0,bn:'neutral'},
+  ];
+  document.getElementById('tabsBar').innerHTML=TABS.map(t=>`
+    <button class="tab-btn ${currentTab===t.key?'active':''}" onclick="switchTab('${t.key}')">
+      ${t.label}${t.badge?`<span class="tab-badge ${t.bn==='neutral'?'neutral':''}">${t.badge}</span>`:''}
+    </button>`).join('');
+  renderTabContent();
+}
+
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderTabContent();
+}
+
+function renderTabContent(){
+  const c=document.getElementById('tabContent');
+  if(currentTab==='overview') c.innerHTML=renderOverview();
+  if(currentTab==='quotes')   c.innerHTML=renderQuotes();
+  if(currentTab==='status')   c.innerHTML=renderStatus();
+  if(currentTab==='certs')    c.innerHTML=renderCerts();
+  if(currentTab==='po')       c.innerHTML=renderPODocs();
+  if(currentTab==='vendors')  c.innerHTML=renderVendors();
+  if(currentTab==='docs')     c.innerHTML=renderDocs();
+  if(currentTab==='notes')    c.innerHTML=renderNotes();
+}
+
+// OVERVIEW TAB
+function renderOverview(){
+  const m=getMaterial(currentId);
+  const p=getProgress(currentId);
+  const certs=getCerts(currentId);
+  const notes=getNotes(currentId);
+  const qty=m.qtyRequired?`${m.qtyRequired} ${m.unitRequired||''}`.trim():'—';
+  const qtyOrd=m.qtyOrdered?`${m.qtyOrdered} ${m.unitOrdered||''}`.trim():'—';
+  const fq=getFinalQuote(currentId);
+  const fqTotal=fq.reduce((s,r)=>s+(parseFloat(r.total)||0),0);
+  return `<div class="detail-grid">
+    <div class="card card-p">
+      <div style="font-weight:700;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+        Material Details <button class="btn btn-ghost btn-xs" onclick="editMaterial()">Edit</button>
+      </div>
+      ${[['Name',m.name],['Category',m.category],['Vendor',m.vendor||'—'],
+         ['Qty Required',qty],['Qty Ordered',qtyOrd],
+         ['Order Date',m.orderDate||'—'],['Expected Delivery',m.expectedDelivery||'—'],
+         ['Actual Delivery',m.actualDelivery||'—'],['Cost',m.cost||'—']]
+        .map(([k,v])=>`<div class="info-row"><span class="info-key">${k}</span><span class="info-val">${esc(v)}</span></div>`).join('')}
+      ${m.size?`<div class="info-row"><span class="info-key">Size</span><span class="info-val">${esc(m.size)}</span></div>`:''}
+      ${m.thickness?`<div class="info-row"><span class="info-key">Thickness</span><span class="info-val">${esc(m.thickness)}</span></div>`:''}
+      ${m.finishType?`<div class="info-row"><span class="info-key">Finish</span><span class="info-val">${esc(m.finishType)}</span></div>`:''} 
+      ${m.colorName||m.colorHex?`<div class="info-row"><span class="info-key">Color</span><span class="info-val" style="display:flex;align-items:center;gap:6px;justify-content:flex-end">${m.colorHex?`<span style="width:14px;height:14px;border-radius:3px;background:${esc(m.colorHex)};border:1px solid #ccc;display:inline-block;flex-shrink:0"></span>`:''}<span>${esc(m.colorName||'')}${m.colorHex?' '+esc(m.colorHex):''}</span></span></div>`:''}
+      ${m.poStatus?`<div class="info-row"><span class="info-key">PO Status</span><span class="info-val"><span class="${m.poStatus==='PO Received'?'po-badge-yes':m.poStatus==='No PO Yet'?'po-badge-no':'po-badge-partial'}">${esc(m.poStatus)}</span></span></div>`:''}
+      ${(m.customFields||[]).map(cf=>`<div class="info-row"><span class="info-key">${esc(cf.key)}</span><span class="info-val">${esc(cf.value)}</span></div>`).join('')}
+    </div>
+    <div class="card card-p">
+      <div style="font-weight:700;color:var(--navy);margin-bottom:14px">Progress Overview</div>
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px">
+          <span>${p.done} of ${p.total} stages complete</span><span style="font-weight:700">${p.pct}%</span>
+        </div>
+        <div style="height:8px;background:#e8ecf2;border-radius:4px;overflow:hidden">
+          <div style="height:100%;background:var(--sky);border-radius:4px;width:${p.pct}%;transition:width .5s"></div>
+        </div>
+      </div>
+      ${(()=>{
+        const stgs=getStages(currentId);
+        const currentStage=stgs.find(s=>s.isCurrent) || stgs.find(s=>s.status!=='done') || stgs[stgs.length-1];
+        return stgs.map((s,i)=>{
+          const isCur=currentStage&&s.id===currentStage.id;
+          return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;padding:${isCur?'7px 10px':'4px 0'};border-radius:${isCur?'10px':'0'};background:${isCur?'linear-gradient(135deg,#0D1B3E,#1C3F6E)':'transparent'};transition:all .2s">
+            <div style="width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;
+              background:${s.status==='done'?'var(--green)':isCur?'var(--orange)':'#e8ecf2'};
+              color:${s.status==='done'||isCur?'#fff':'#94a3b8'};
+              box-shadow:${isCur?'0 0 0 3px rgba(224,123,57,.35)':'none'}">${s.status==='done'?'✓':i+1}</div>
+            <span style="flex:1;font-size:12px;
+              color:${s.status==='done'?'var(--green)':isCur?'#fff':'var(--muted)'};
+              font-weight:${s.status==='done'||isCur?'600':'400'}">${esc(s.name)}</span>
+            ${isCur?`<span style="font-size:9px;font-weight:700;background:var(--orange);color:#fff;padding:2px 8px;border-radius:10px;flex-shrink:0">CURRENT</span>`:''}
+            ${s.status==='done'&&s.date?`<span style="font-size:10px;color:var(--green);opacity:.8">${esc(s.date)}</span>`:''}
+          </div>`;
+        }).join('');
+      })()}
+    </div>
+    <div class="card card-p">
+      <div style="font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+        Final Quote Summary
+        <button class="btn btn-ghost btn-xs" onclick="switchTab('quotes')">View →</button>
+      </div>
+      ${fq.length===0?`<p style="font-size:13px;color:var(--muted)">No final quote added. <a href="#" onclick="switchTab('quotes');return false" style="color:var(--sky)">Add quote →</a></p>`
+      :`<div class="final-quote-banner">
+          <div class="fqb-title">Final Quote</div>
+          ${fq.map(r=>`<div class="fqb-row"><span class="fqb-label">${esc(r.description)}</span><span class="fqb-val">${r.currency||'$'}${parseFloat(r.total||0).toLocaleString()}</span></div>`).join('')}
+          <div style="border-top:1px solid rgba(255,255,255,.15);margin-top:8px;padding-top:8px" class="fqb-row">
+            <span class="fqb-label" style="font-weight:700">TOTAL</span>
+            <span class="fqb-total">${fq[0]?.currency||'$'}${fqTotal.toLocaleString()}</span>
+          </div>
+        </div>`}
+    </div>
+    <div class="card card-p">
+      <div style="font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+        Certifications <button class="btn btn-ghost btn-xs" onclick="openCertModal()">+ Add</button>
+      </div>
+      ${certs.length===0?`<p style="font-size:13px;color:var(--muted)">No certifications. <a href="#" onclick="switchTab('certs');return false" style="color:var(--sky)">Add now →</a></p>`
+      :certs.map(c=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f7fa;font-size:13px">
+          <span style="color:var(--text)">${esc(c.name)}</span>
+          <span class="badge badge-${c.status}">${c.status}</span>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// QUOTES TAB
+function getCurrencySymbol(str){
+  const m=str?.match(/\((.+)\)/); return m?m[1]:(str||'$');
+}
+function getQuoteMeta(type){
+  if(!DB.quoteMeta) DB.quoteMeta={};
+  const key=currentId+':'+type;
+  if(!DB.quoteMeta[key]) DB.quoteMeta[key]={pdfData:null,pdfName:''};
+  return DB.quoteMeta[key];
+}
+function saveQuoteMeta(type,field,val){
+  if(!DB.quoteMeta) DB.quoteMeta={};
+  const key=currentId+':'+type;
+  if(!DB.quoteMeta[key]) DB.quoteMeta[key]={pdfData:null,pdfName:''};
+  DB.quoteMeta[key][field]=val; save();
+}
+
+// ── Per-row tax/delivery (each description is its own self-contained quote) ──
+function updateRowExtra(rid,field,val){
+  const r=DB.quotes.find(x=>x.id===rid); if(!r) return;
+  r[field]=val; save();
+  // Update all breakdown spans in-place (no full re-render needed)
+  const sym=getCurrencySymbol(r.currency||'USD ($)');
+  const base=parseFloat(r.total)||0;
+  const tax=parseFloat(r.rowTax)||0;
+  const del=parseFloat(r.rowDelivery)||0;
+  const grand=base+tax+del;
+  const taxEl=document.getElementById('bkd-tax-'+rid);
+  const delEl=document.getElementById('bkd-del-'+rid);
+  const grandEl=document.getElementById('bkd-grand-'+rid);
+  const hdrGrandEl=document.querySelector(`#qrow-${rid} [style*="font-size:15px"]`);
+  if(taxEl) taxEl.textContent=tax>0?sym+tax.toLocaleString(undefined,{minimumFractionDigits:2}):'—';
+  if(delEl) delEl.textContent=del>0?sym+del.toLocaleString(undefined,{minimumFractionDigits:2}):'—';
+  if(grandEl) grandEl.textContent=grand>0?sym+grand.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+  // Update card header grand total
+  refreshQuoteCard(rid);
+}
+function rowGrand(r){
+  const base=parseFloat(r.total)||0;
+  const tax=parseFloat(r.rowTax)||0;
+  const del=parseFloat(r.rowDelivery)||0;
+  return base+tax+del;
+}
+// calcQuoteTotals used for status/overview final-quote banner
+function calcQuoteTotals(type){
+  const rows=DB.quotes.filter(q=>q.materialId===currentId&&q.quoteType===type);
+  const linesTotal=rows.reduce((s,r)=>s+(parseFloat(r.total)||0),0);
+  const tax=rows.reduce((s,r)=>s+(parseFloat(r.rowTax)||0),0);
+  const delivery=rows.reduce((s,r)=>s+(parseFloat(r.rowDelivery)||0),0);
+  const grand=rows.reduce((s,r)=>s+rowGrand(r),0);
+  const currency=(rows[0]?.currency)||'USD ($)';
+  return {linesTotal,tax,delivery,grand,currency};
+}
+
+function renderQuotes(){
+  const recvd=getQuotes(currentId,'received');
+  const final=getQuotes(currentId,'final');
+
+  function quoteSection(type){
+    const rows=type==='received'?recvd:final;
+    const meta=getQuoteMeta(type);
+    const isFinal=type==='final';
+    const accentCol=isFinal?'var(--green)':'var(--sky)';
+    const bgCol=isFinal?'var(--grnl)':'var(--skyl)';
+    const label=isFinal?'✅ Final Quote':'📥 Received Quotes';
+    const sublabel=isFinal?'auto-synced to Status Tracking & Overview':'for comparison and reference';
+
+    const cards=rows.map((r,idx)=>{
+      const sym=getCurrencySymbol(r.currency||'USD ($)');
+      const base=parseFloat(r.total)||0;
+      const tax=parseFloat(r.rowTax)||0;
+      const del=parseFloat(r.rowDelivery)||0;
+      const grand=base+tax+del;
+      return `
+      <div id="qrow-${r.id}" style="border:1.5px solid ${grand>0?accentCol:'var(--border)'};border-radius:12px;margin-bottom:14px;overflow:hidden;transition:border-color .2s;background:#fff;box-shadow:0 2px 8px rgba(13,27,62,.07)">
+
+        <!-- ── CARD HEADER (click to collapse) ── -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:${bgCol};cursor:pointer;user-select:none;gap:10px" onclick="toggleQuoteCard('${r.id}')">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+            <div style="width:26px;height:26px;border-radius:7px;background:${accentCol};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${idx+1}</div>
+            <div style="min-width:0;flex:1">
+              <div style="font-size:13px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:420px">${r.description?esc(r.description):'<em style="color:var(--muted);font-weight:400">Untitled quote — click to edit</em>'}</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">${r.qty&&r.unit?esc(r.qty)+' '+esc(r.unit):''} ${r.unitPrice?'@ '+sym+esc(r.unitPrice):''}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;flex-shrink:0">
+            ${grand>0?`<div style="text-align:right">
+              <div style="font-size:15px;font-weight:700;color:${isFinal?'var(--green)':'var(--navy)'};font-family:monospace">${sym}${grand.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+              ${(tax>0||del>0)?`<div style="font-size:9px;color:var(--muted)">incl. tax+delivery</div>`:''}
+            </div>`:''}
+            <span style="font-size:11px;color:var(--muted)" id="qcarrow-${r.id}">▼</span>
+          </div>
+        </div>
+
+        <!-- ── CARD BODY ── -->
+        <div id="qcbody-${r.id}" style="padding:16px;display:block">
+
+          <!-- Row 1: Description, Qty, Unit, Currency -->
+          <div style="display:grid;grid-template-columns:2.5fr 80px 1fr 100px;gap:10px;margin-bottom:10px">
+            <div>
+              <label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);display:block;margin-bottom:4px">Description</label>
+              <input class="quote-input-sm" value="${esc(r.description)}" placeholder="e.g. ACP Panels FR-A2 4mm Champagne" style="width:100%"
+                onchange="updateQuoteRow('${r.id}','description',this.value);refreshQuoteCard('${r.id}')">
+            </div>
+            <div>
+              <label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);display:block;margin-bottom:4px">Qty</label>
+              <input class="quote-input-sm" type="number" value="${esc(r.qty)}" placeholder="0" style="width:100%"
+                onchange="updateQuoteRow('${r.id}','qty',this.value);recalcRow('${r.id}')">
+            </div>
+            <div>
+              <label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);display:block;margin-bottom:4px">Unit</label>
+              <select class="quote-input-sm" style="width:100%" onchange="updateQuoteRow('${r.id}','unit',this.value)">
+                <option value="">— select —</option>
+                ${DB.settings.units.map(u=>`<option ${r.unit===u?'selected':''}>${esc(u)}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);display:block;margin-bottom:4px">Currency</label>
+              <select class="currency-select" style="width:100%;color:var(--text)"
+                onchange="updateQuoteRow('${r.id}','currency',this.value);refreshQuoteCard('${r.id}')">
+                ${DB.settings.currencies.map(cu=>`<option ${(r.currency||'USD ($)')===cu?'selected':''}>${esc(cu)}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 2: Unit Price + Line Total -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+            <div>
+              <label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);display:block;margin-bottom:4px">Unit Price</label>
+              <input class="quote-input-sm" type="number" value="${esc(r.unitPrice)}" placeholder="0.00" style="width:100%"
+                onchange="updateQuoteRow('${r.id}','unitPrice',this.value);recalcRow('${r.id}')">
+            </div>
+            <div>
+              <label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);display:block;margin-bottom:4px">Line Total (Qty × Unit Price) — auto</label>
+              <input class="quote-input-sm" type="number" value="${esc(r.total)}" id="qtotal-${r.id}" readonly
+                style="width:100%;background:#f0f4f8;font-weight:700;color:var(--navy)">
+            </div>
+          </div>
+
+          <!-- ── SELF-CONTAINED BREAKDOWN: Subtotal + Tax + Delivery + Grand ── -->
+          <div style="border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px">
+            <!-- Subtotal row -->
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #f0f4f8">
+              <span style="font-size:12px;color:var(--muted);font-weight:500">Subtotal (Qty × Unit Price)</span>
+              <span id="bkd-sub-${r.id}" style="font-size:13px;font-weight:700;color:var(--navy);font-family:monospace">${base>0?sym+base.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}</span>
+            </div>
+            <!-- Tax row -->
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid #f0f4f8;gap:10px">
+              <span style="font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap">Tax / GST</span>
+              <div style="display:flex;align-items:center;gap:10px">
+                <input type="number" value="${esc(String(r.rowTax||''))}" placeholder="Enter amount" id="bkd-tax-in-${r.id}"
+                  style="width:130px;border:1.5px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12px;text-align:right;font-family:monospace;color:var(--text);background:#fff"
+                  onchange="updateRowExtra('${r.id}','rowTax',this.value)"
+                  onfocus="this.style.borderColor='var(--sky)'" onblur="this.style.borderColor='var(--border)'">
+                <span id="bkd-tax-${r.id}" style="font-size:12px;font-weight:600;color:var(--text);font-family:monospace;min-width:110px;text-align:right">${tax>0?sym+tax.toLocaleString(undefined,{minimumFractionDigits:2}):'—'}</span>
+              </div>
+            </div>
+            <!-- Delivery row -->
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid #f0f4f8;gap:10px">
+              <span style="font-size:12px;color:var(--muted);font-weight:500;white-space:nowrap">Delivery Charges</span>
+              <div style="display:flex;align-items:center;gap:10px">
+                <input type="number" value="${esc(String(r.rowDelivery||''))}" placeholder="Enter amount" id="bkd-del-in-${r.id}"
+                  style="width:130px;border:1.5px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12px;text-align:right;font-family:monospace;color:var(--text);background:#fff"
+                  onchange="updateRowExtra('${r.id}','rowDelivery',this.value)"
+                  onfocus="this.style.borderColor='var(--sky)'" onblur="this.style.borderColor='var(--border)'">
+                <span id="bkd-del-${r.id}" style="font-size:12px;font-weight:600;color:var(--text);font-family:monospace;min-width:110px;text-align:right">${del>0?sym+del.toLocaleString(undefined,{minimumFractionDigits:2}):'—'}</span>
+              </div>
+            </div>
+            <!-- Grand Total row -->
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:var(--navy)">
+              <span style="font-size:13px;font-weight:700;color:#C8D6E5;text-transform:uppercase;letter-spacing:.6px">Grand Total</span>
+              <span id="bkd-grand-${r.id}" style="font-size:19px;font-weight:700;color:var(--gold);font-family:monospace">${grand>0?sym+grand.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}</span>
+            </div>
+          </div>
+
+          <!-- Remove button -->
+          <div style="display:flex;justify-content:flex-end">
+            <button class="btn btn-ghost btn-xs" style="color:var(--red);border-color:var(--redl)"
+              onclick="if(confirm('Remove this quote?'))deleteQuoteRow('${r.id}','${type}')">
+              × Remove this quote
+            </button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `
+    <div class="quote-section" ${isFinal?'style="border:2px solid var(--green)"':''}>
+      <div class="quote-header" style="background:${bgCol}" onclick="toggleQuoteSection('qb-${type}')">
+        <div class="quote-header-title" style="color:${accentCol}">
+          <span style="font-size:18px">${isFinal?'✅':'📥'}</span> ${isFinal?'Final Quote':'Received Quotes'}
+          <span style="font-size:11px;font-weight:400;color:var(--muted)">(${rows.length} quote${rows.length!==1?'s':''}) — ${sublabel}</span>
+        </div>
+        <span id="qarrow-qb-${type}" style="color:var(--muted);font-size:13px">▼</span>
+      </div>
+      <div class="quote-body open" id="qb-${type}">
+        ${rows.length===0?`
+          <div style="text-align:center;padding:28px;color:var(--muted);font-size:13px">
+            <div style="font-size:32px;margin-bottom:8px">${isFinal?'✅':'📥'}</div>
+            No quotes yet — click <strong>+ Add Quote</strong> below to add one
+          </div>`
+        :cards}
+        <button class="btn btn-ghost btn-sm" onclick="addQuoteRow('${type}')" style="margin-bottom:12px">+ Add Quote</button>
+        <!-- Section PDF -->
+        <div class="quote-attach-row">
+          <span style="font-size:12px;font-weight:600;color:var(--muted)">Attach Section PDF:</span>
+          ${meta.pdfData?`<a href="${meta.pdfData}" download="${esc(meta.pdfName||'quote.pdf')}" class="quote-pdf-chip">📎 ${esc(meta.pdfName||'quote.pdf')}</a>
+            <button class="delete-btn" onclick="removeQuotePdf('${type}')">× remove</button>`
+          :`<label style="cursor:pointer;position:relative">
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="position:absolute;opacity:0;width:1px;height:1px" onchange="attachQuotePdf('${type}',this)">
+              <span class="btn btn-ghost btn-xs">📎 Attach PDF / Document</span>
+            </label>`}
+        </div>
+        ${!isFinal&&rows.length>0?`<div style="margin-top:8px;padding:9px 12px;background:var(--skyl);border-radius:8px;font-size:12px;color:var(--steel)">💡 Set the <strong>Final Quote</strong> below — it auto-syncs to Status Tracking and Overview.</div>`:''}
+      </div>
+    </div>`;
+  }
+
+  const ft=calcQuoteTotals('final');
+  const fsym=getCurrencySymbol(ft.currency);
+
+  return `<div style="display:flex;flex-direction:column;gap:0">
+    ${quoteSection('received')}
+    ${quoteSection('final')}
+  </div>`;
+}
+
+async function attachQuotePdf(type,input){
+  const f=input.files[0]; if(!f)return;
+  const data=await readFile(f);
+  saveQuoteMeta(type,'pdfData',data);
+  saveQuoteMeta(type,'pdfName',f.name);
+  renderTabContent(); toast('Quote document attached');
+  input.value='';
+}
+function removeQuotePdf(type){
+  if(!confirm('Remove attached document?'))return;
+  saveQuoteMeta(type,'pdfData',null);
+  saveQuoteMeta(type,'pdfName','');
+  renderTabContent(); toast('Removed');
+}
+
+
+function toggleQuoteSection(id){
+  const body=document.getElementById(id);
+  const arrow=document.getElementById('qarrow-'+id);
+  const isOpen=body.classList.toggle('open');
+  if(arrow) arrow.textContent=isOpen?'▲':'▼';
+}
+function toggleQuoteCard(rid){
+  const body=document.getElementById('qcbody-'+rid);
+  const arrow=document.getElementById('qcarrow-'+rid);
+  if(!body) return;
+  const isOpen=body.style.display==='none';
+  body.style.display=isOpen?'block':'none';
+  if(arrow) arrow.textContent=isOpen?'▲':'▼';
+  const r=DB.quotes.find(x=>x.id===rid);
+  if(r){ r._expanded=isOpen; save(); }
+}
+function refreshQuoteCard(rid){
+  // Refresh just the header description+total without full re-render
+  renderTabContent();
+}
+
+function addQuoteRow(type){
+  DB.quotes.push({id:makeId(),materialId:currentId,quoteType:type,description:'',qty:'',unitPrice:'',total:'',currency:'$',createdAt:Date.now()});
+  save(); renderTabContent(); renderDetail();
+}
+function updateQuoteRow(id,field,val){
+  const r=DB.quotes.find(x=>x.id===id); if(r){r[field]=val; save();}
+}
+function recalcRow(id){
+  const r=DB.quotes.find(x=>x.id===id); if(!r)return;
+  const t=(parseFloat(r.qty)||0)*(parseFloat(r.unitPrice)||0);
+  r.total=t?t.toFixed(2):''; save();
+  const sym=getCurrencySymbol(r.currency||'USD ($)');
+  const base=parseFloat(r.total)||0;
+  const tax=parseFloat(r.rowTax)||0;
+  const del=parseFloat(r.rowDelivery)||0;
+  const grand=base+tax+del;
+  // Update inputs and spans in-place — no full re-render needed
+  const totEl=document.getElementById('qtotal-'+id);
+  if(totEl) totEl.value=r.total;
+  const subEl=document.getElementById('bkd-sub-'+id);
+  if(subEl) subEl.textContent=base>0?sym+base.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+  const grandEl=document.getElementById('bkd-grand-'+id);
+  if(grandEl) grandEl.textContent=grand>0?sym+grand.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+  refreshQuoteCard(id);
+  renderDetail();
+}
+function deleteQuoteRow(id,type){
+  if(!confirm('Remove this line?'))return;
+  DB.quotes=DB.quotes.filter(x=>x.id!==id); save(); renderTabContent(); renderDetail();
+}
+
+// STATUS TAB
+function getBlockers(sid){
+  if(!DB.blockers) DB.blockers={};
+  if(!DB.blockers[sid]) DB.blockers[sid]=[];
+  return DB.blockers[sid];
+}
+function addBlocker(sid){
+  if(!DB.blockers) DB.blockers={};
+  if(!DB.blockers[sid]) DB.blockers[sid]=[];
+  DB.blockers[sid].push({id:makeId(),text:'',resolved:false});
+  save();
+  const el=document.getElementById('blockers-'+sid);
+  if(el) el.innerHTML=renderBlockersHtml(sid);
+}
+function updateBlocker(sid,bid,field,val){
+  const b=(DB.blockers?.[sid]||[]).find(x=>x.id===bid);
+  if(b){b[field]=val;save();}
+}
+function deleteBlocker(sid,bid){
+  if(!DB.blockers?.[sid])return;
+  DB.blockers[sid]=DB.blockers[sid].filter(x=>x.id!==bid);
+  save();
+  const el=document.getElementById('blockers-'+sid);
+  if(el) el.innerHTML=renderBlockersHtml(sid);
+}
+function toggleBlockerResolved(sid,bid){
+  const b=(DB.blockers?.[sid]||[]).find(x=>x.id===bid);
+  if(b){b.resolved=!b.resolved;save();}
+  const el=document.getElementById('blockers-'+sid);
+  if(el) el.innerHTML=renderBlockersHtml(sid);
+}
+function renderBlockersHtml(sid){
+  const blockers=getBlockers(sid);
+  return blockers.map(b=>`
+    <div class="blocker-item" id="bi-${b.id}">
+      <input type="checkbox" ${b.resolved?'checked':''} onchange="toggleBlockerResolved('${sid}','${b.id}')" style="margin-top:4px;accent-color:var(--gold);width:14px;height:14px;flex-shrink:0">
+      <input class="${b.resolved?'blocker-resolved':''}" value="${esc(b.text)}" placeholder="Describe the blocker..."
+        onchange="updateBlocker('${sid}','${b.id}','text',this.value)"
+        style="flex:1;border:1.5px solid #fde68a;border-radius:6px;padding:6px 9px;font-size:12px;font-family:inherit;background:#fff;${b.resolved?'text-decoration:line-through;opacity:.5':''}">
+      <button class="delete-btn" onclick="deleteBlocker('${sid}','${b.id}')">×</button>
+    </div>`).join('');
+}
+function renderStatus(){
+  const stages=getStages(currentId);
+  const fq=getFinalQuote(currentId);
+  const ft=calcQuoteTotals('final');
+  const fsym=getCurrencySymbol(ft.currency);
+
+  return `<div>${stages.map((s,i)=>{
+    const blockers=getBlockers(s.id);
+    const openBlockers=blockers.filter(b=>!b.resolved).length;
+    return `
+    <div class="stage-row ${s.status==='done'?'done':s.isCurrent?'active-stage':''}" id="sr-${s.id}" style="${s.isCurrent?'border-left-color:var(--orange)':''}">
+      <div class="stage-header" onclick="toggleStage('${s.id}')">
+        <div class="stage-dot" style="background:${s.status==='done'?'var(--green)':s.status==='na'?'#94a3b8':getStageColor(i)}">${s.status==='done'?'✓':i+1}</div>
+        <div class="stage-info">
+          <div class="stage-name-text" style="color:${s.status==='done'?'var(--navy)':'var(--muted)'}">${esc(s.name)}</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            ${s.date?`<div class="stage-date-text">${esc(s.date)}</div>`:''}
+            ${s.estimatedDate&&s.status!=='done'?`<span class="est-date-chip">📅 Est: ${esc(s.estimatedDate)}</span>`:''}
+            ${openBlockers>0?`<span style="background:#fef9c3;color:#92400e;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px">⚠ ${openBlockers} blocker${openBlockers!==1?'s':''}</span>`:''}
+          </div>
+        </div>
+        <button class="stage-toggle ${s.status==='done'?'st-done':s.status==='na'?'st-na':'st-pending'}"
+          onclick="cycleStage('${s.id}');event.stopPropagation()">
+          ${s.status==='done'?'✓ Done':s.status==='na'?'N/A':'○ Pending'}
+        </button>
+        <span class="stage-expand" id="se-${s.id}">▼</span>
+      </div>
+      <div class="stage-body" id="sb-${s.id}">
+        <div class="form-row" style="margin-top:12px">
+          <div class="form-group"><label>Actual Date ${s.status==='done'?'(completed)':'(when done)'}</label><input type="date" value="${esc(s.date||'')}" onchange="updateStageField('${s.id}','date',this.value)"></div>
+          <div class="form-group"><label>Estimated Date</label><input type="date" value="${esc(s.estimatedDate||'')}" onchange="updateStageField('${s.id}','estimatedDate',this.value)"></div>
+          <div class="form-group form-full"><label>Notes</label><input type="text" value="${esc(s.notes||'')}" placeholder="Notes for this stage..." onchange="updateStageField('${s.id}','notes',this.value)"></div>
+        </div>
+        <!-- BLOCKERS -->
+        <div class="blocker-box">
+          <div class="blocker-box-title">
+            ⚠ Blockers
+            <span style="font-size:10px;font-weight:400;color:#92400e">(things stopping this stage from completing)</span>
+            ${openBlockers>0?`<span style="background:#fef9c3;color:#92400e;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:auto">${openBlockers} open</span>`:''}
+          </div>
+          <div id="blockers-${s.id}">${renderBlockersHtml(s.id)}</div>
+          <button class="btn btn-ghost btn-xs" style="margin-top:8px;border-color:#fde68a;color:#92400e" onclick="addBlocker('${s.id}')">+ Add Blocker</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;background:${s.isCurrent?'linear-gradient(135deg,#0D1B3E,#1C3F6E)':'#f8fafc'};border-radius:8px;border:1.5px solid ${s.isCurrent?'var(--orange)':'var(--border)'}">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;flex:1">
+            <input type="checkbox" ${s.isCurrent?'checked':''} onchange="setCurrentStage('${s.id}')"
+              style="width:16px;height:16px;accent-color:var(--orange);cursor:pointer;flex-shrink:0">
+            <span style="font-size:13px;font-weight:600;color:${s.isCurrent?'#fff':'var(--navy)'}">
+              ${s.isCurrent?'✓ This is the Current Stage':'Mark as Current Stage'}
+            </span>
+          </label>
+          ${s.isCurrent?`<span style="font-size:10px;font-weight:700;background:var(--orange);color:#fff;padding:2px 9px;border-radius:10px">CURRENT</span>`:''}
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="saveStage('${s.id}')">Save Stage</button>
+        ${i===0?`
+          <div class="stage-fq-box">
+            <div class="sfq-title">📌 Final Quote ${fq.length>0?`<span class="sfq-linked">✓ Linked — auto-synced from Quotes tab</span>`:''}</div>
+            ${fq.length===0?`<p style="font-size:12px;color:#8BA4C0">No final quote yet. Go to the <a href="#" onclick="switchTab('quotes');return false" style="color:var(--gold)">Quotes tab</a>.</p>`
+            :`${fq.map(r=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.1)">
+                <span style="color:#C8D6E5">${esc(r.description)}</span>
+                <span style="font-weight:600;color:#fff">${fsym}${parseFloat(r.total||0).toLocaleString()}</span>
+              </div>`).join('')}
+              <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.1)">
+                <span style="color:#C8D6E5">Tax</span><span style="color:#fff">${fsym}${ft.tax.toLocaleString()}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.1)">
+                <span style="color:#C8D6E5">Delivery</span><span style="color:#fff">${fsym}${ft.delivery.toLocaleString()}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:14px;padding:8px 0 0;font-weight:700">
+                <span style="color:#8BA4C0">GRAND TOTAL</span><span style="color:var(--gold)">${fsym}${ft.grand.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
+              </div>
+              <div style="font-size:10px;color:#8BA4C0;margin-top:6px">Edit in Quotes tab → updates here instantly</div>`}
+          </div>`:''}
+      </div>
+    </div>`;}).join('')}</div>`;
+}
+
+function toggleStage(sid){
+  const body=document.getElementById('sb-'+sid);
+  const arrow=document.getElementById('se-'+sid);
+  if(body){ const o=body.classList.toggle('open'); if(arrow) arrow.classList.toggle('open',o); }
+}
+function cycleStage(sid){
+  const s=DB.stages.find(x=>x.id===sid); if(!s)return;
+  s.status={pending:'done',done:'na',na:'pending'}[s.status]||'pending';
+  save(); renderTabContent(); renderDetail();
+}
+function setCurrentStage(sid){
+  // Unmark all stages for this material, then mark the selected one
+  const stages=DB.stages.filter(s=>s.materialId===currentId);
+  stages.forEach(s=>{ s.isCurrent=(s.id===sid); });
+  save(); renderTabContent(); renderDetail(); toast('Current stage updated');
+}
+function updateStageField(sid,field,val){
+  const s=DB.stages.find(x=>x.id===sid); if(s){s[field]=val; save();}
+}
+function saveStage(sid){ save(); toast('Stage saved'); }
+
+// CERTS TAB
+function renderCerts(){
+  const certs=getCerts(currentId);
+  const BADGE={Missing:'badge-missing',Submitted:'badge-submitted',Received:'badge-ok',Approved:'badge-approved',Rejected:'badge-rejected'};
+  const STATUS_OPTS=['Missing','Submitted','Received','Approved','Rejected'];
+  return `<div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <p style="font-size:13px;color:var(--muted)">${certs.length} certifications tracked</p>
+      <button class="btn btn-purple" onclick="openCertModal()">+ Add Certification</button>
+    </div>
+    ${certs.length===0?`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No certifications yet</div><div class="empty-sub">Add NFPA 285, ASTM E84, ESR, MTC and others</div></div>`
+    :certs.map(cert=>{
+      const editPanelId='cedit-panel-'+cert.id;
+      return `
+      <div class="cert-card cert-${cert.status}" id="cc-${cert.id}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px">
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:14px;color:var(--navy)">${esc(cert.name)}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(cert.type||'')}</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap">
+            <span class="badge ${BADGE[cert.status]||'badge-missing'}">${cert.status}</span>
+            <select class="btn btn-ghost btn-xs" onchange="updateCertStatus('${cert.id}',this.value)" style="cursor:pointer">
+              ${STATUS_OPTS.map(s=>`<option ${cert.status===s?'selected':''}>${s}</option>`).join('')}
+            </select>
+            <button class="btn btn-ghost btn-xs" style="color:var(--sky);border-color:var(--sky)" onclick="toggleCertEdit('${cert.id}')">✏ Edit</button>
+            <button class="delete-btn" onclick="deleteCert('${cert.id}')">×</button>
+          </div>
+        </div>
+        ${cert.fileData
+          ?`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+              <a class="cert-file-link" href="${cert.fileData}" download="${esc(cert.fileName||'document')}">📎 ${esc(cert.fileName||'Download')}</a>
+              <a href="${cert.fileData}" target="_blank" class="cert-file-link" style="background:var(--skyl);color:var(--sky)">👁 Preview</a>
+              <button class="delete-btn" onclick="removeCertFile('${cert.id}')">× remove file</button>
+            </div>`
+          :`<label style="display:inline-block;cursor:pointer;position:relative;margin-bottom:6px">
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="uploadCertFile('${cert.id}',this)">
+              <span style="display:inline-flex;align-items:center;gap:5px;background:#f0f4f8;border:1.5px dashed var(--border);color:var(--muted);font-size:11px;font-weight:600;padding:5px 12px;border-radius:7px">
+                📎 Attach PDF / JPG / PNG / DOC
+              </span>
+            </label>`}
+        ${cert.notes?`<p style="font-size:12px;color:var(--muted);margin-top:4px">${esc(cert.notes)}</p>`:''}
+        <div id="${editPanelId}" style="display:none;margin-top:12px;padding:14px;background:#f8fafc;border-radius:10px;border:1.5px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Edit Certification</div>
+          <div class="form-row">
+            <div class="form-group form-full">
+              <label>Name</label>
+              <input id="cedit-name-${cert.id}" value="${esc(cert.name)}" placeholder="Certification name">
+            </div>
+            <div class="form-group">
+              <label>Type</label>
+              <select id="cedit-type-${cert.id}">
+                ${DB.settings.certTypes.map(t=>`<option ${cert.type===t?'selected':''}>${esc(t)}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="cedit-status-${cert.id}">
+                ${STATUS_OPTS.map(s=>`<option ${cert.status===s?'selected':''}>${s}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group form-full">
+              <label>Notes</label>
+              <textarea id="cedit-notes-${cert.id}" rows="2" style="width:100%;resize:vertical">${esc(cert.notes||'')}</textarea>
+            </div>
+            <div class="form-group form-full">
+              <label>Replace / Upload File</label>
+              <div class="upload-area">
+                <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="uploadCertFile('${cert.id}',this)">
+                <div style="font-size:13px;color:var(--muted)">Drop file here or <strong style="color:var(--sky)">click to browse</strong>${cert.fileData?`<div style="font-size:11px;margin-top:3px;color:var(--green)">✓ Attached: ${esc(cert.fileName||'')}</div>`:''}</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-purple btn-sm" onclick="saveCertEdit('${cert.id}')">Save Changes</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleCertEdit('${cert.id}')">Cancel</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+function toggleCertEdit(cid){
+  const el=document.getElementById('cedit-panel-'+cid);
+  if(el) el.style.display=el.style.display==='none'?'block':'none';
+}
+async function uploadCertFile(cid,input){
+  const f=input.files[0]; if(!f)return;
+  const cert=DB.certs.find(x=>x.id===cid); if(!cert)return;
+  const data=await readFile(f);
+  cert.fileData=data; cert.fileName=f.name;
+  save(); renderTabContent(); toast('File attached: '+f.name);
+  input.value='';
+}
+function removeCertFile(cid){
+  if(!confirm('Remove attached file?'))return;
+  const cert=DB.certs.find(x=>x.id===cid); if(!cert)return;
+  cert.fileData=null; cert.fileName='';
+  save(); renderTabContent(); toast('File removed');
+}
+function saveCertEdit(cid){
+  const cert=DB.certs.find(x=>x.id===cid); if(!cert)return;
+  cert.name=document.getElementById('cedit-name-'+cid)?.value?.trim()||cert.name;
+  cert.type=document.getElementById('cedit-type-'+cid)?.value||cert.type;
+  cert.status=document.getElementById('cedit-status-'+cid)?.value||cert.status;
+  cert.notes=document.getElementById('cedit-notes-'+cid)?.value||'';
+  save(); renderTabContent(); renderDetail(); toast('Certification updated');
+}
+function updateCertStatus(cid,status){
+  const c=DB.certs.find(x=>x.id===cid); if(c){c.status=status;save();renderTabContent();renderDetail();}
+}
+function deleteCert(cid){
+  if(!confirm('Delete this certification?'))return;
+  DB.certs=DB.certs.filter(x=>x.id!==cid); save(); renderTabContent(); renderDetail(); toast('Certification deleted');
+}
+
+// VENDOR DATABASE TAB
+function getVendors(mid){
+  if(!DB.vendors) DB.vendors=[];
+  return DB.vendors.filter(v=>v.materialId===mid);
+}
+function addVendor(mid){
+  const name=document.getElementById('nv-name')?.value?.trim();
+  const email=document.getElementById('nv-email')?.value?.trim();
+  const company=document.getElementById('nv-company')?.value?.trim();
+  const phone=document.getElementById('nv-phone')?.value?.trim();
+  if(!name){toast('Enter vendor name','error');return;}
+  if(!DB.vendors) DB.vendors=[];
+  DB.vendors.push({id:makeId(),materialId:mid,name,email,phone,company,createdAt:Date.now()});
+  save(); renderTabContent(); renderDetail(); toast('Vendor added');
+}
+function deleteVendor(vid){
+  if(!confirm('Remove this vendor?'))return;
+  DB.vendors=(DB.vendors||[]).filter(v=>v.id!==vid);
+  save(); renderTabContent(); renderDetail(); toast('Vendor removed');
+}
+function openGmail(vid){
+  const v=(DB.vendors||[]).find(x=>x.id===vid);
+  if(!v?.email){toast('Add vendor email first','error');return;}
+  const url=`https://mail.google.com/mail/u/0/#search/from%3A${encodeURIComponent(v.email)}`;
+  window.open(url,'_blank');
+  toast('Gmail opened — find the quote, then click Parse & Import');
+}
+function openQuoteParser(vid){
+  const v=(DB.vendors||[]).find(x=>x.id===vid);
+  if(!v) return;
+  const existing=document.getElementById('qp-overlay');
+  if(existing) existing.remove();
+  const el=document.createElement('div');
+  el.id='qp-overlay';
+  el.style.cssText='position:fixed;inset:0;background:rgba(13,27,62,.6);z-index:600;display:flex;align-items:center;justify-content:center;padding:16px';
+  el.onclick=e=>{ if(e.target===el) el.remove(); };
+  el.innerHTML=`
+    <div style="background:#fff;border-radius:18px;box-shadow:0 8px 40px rgba(13,27,62,.2);width:100%;max-width:620px;max-height:90vh;overflow-y:auto;padding:28px">
+      <div style="font-size:18px;font-weight:700;color:#0D1B3E;margin-bottom:4px">Parse Quote from ${esc(v.name)}</div>
+      <div style="font-size:12px;color:#6B7D8F;margin-bottom:20px">Upload the vendor's PDF quote OR paste the email text below. AI will auto-extract every line item, unit price, tax, delivery and grand total.</div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#6B7D8F;display:block;margin-bottom:6px">Paste Quote Email Text</label>
+        <textarea id="qp-text" rows="9" placeholder="Paste the full quote or email body here...
+
+Examples the parser understands:
+ACP Panels FR-A2 4mm - 500 sqm @ ₹926 each = ₹463,000
+Sealant rolls - 200 units @ ₹450 = ₹90,000
+Tax (GST 18%): ₹98,460
+Delivery: ₹6,000"
+          style="width:100%;border:1.5px solid #DEE6EF;border-radius:10px;padding:12px;font-size:12px;font-family:'Courier New',monospace;resize:vertical;line-height:1.6;color:#1A2B4A"></textarea>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#6B7D8F;display:block;margin-bottom:6px">OR Upload Quote PDF / Document</label>
+        <div style="border:2px dashed #DEE6EF;border-radius:10px;padding:18px;text-align:center;position:relative;cursor:pointer;transition:border-color .15s" onmouseenter="this.style.borderColor='#2E7FD9'" onmouseleave="this.style.borderColor='#DEE6EF'">
+          <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xlsx,.csv,.txt" onchange="qpHandleFile(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%">
+          <div style="font-size:13px;color:#6B7D8F">Drop file here or <strong style="color:#2E7FD9">click to browse</strong></div>
+          <div id="qp-file-name" style="font-size:11px;color:#2A7A4B;margin-top:5px;font-weight:600"></div>
+        </div>
+      </div>
+      <div id="qp-progress" style="display:none;margin-bottom:14px"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:14px;border-top:1px solid #DEE6EF">
+        <button onclick="document.getElementById('qp-overlay').remove()" style="background:#f0f4f8;border:1.5px solid #DEE6EF;color:#6B7D8F;border-radius:8px;padding:9px 20px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600">Cancel</button>
+        <button id="qp-main-btn" onclick="qpImport('${vid}')" style="background:#0D1B3E;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">⚡ Parse &amp; Import to Received Quotes →</button>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+}
+
+let _qpFile=null, _qpFileName='', _qpFileType='';
+function qpHandleFile(input){
+  const f=input.files[0]; if(!f) return;
+  _qpFileName=f.name; _qpFileType=f.type||'';
+  const nameEl=document.getElementById('qp-file-name');
+  if(nameEl) nameEl.innerHTML='<span style="color:var(--green)">✓ '+f.name+' ('+Math.round(f.size/1024)+' KB)</span>';
+  const r=new FileReader(); r.onload=e=>{ _qpFile=e.target.result; }; r.readAsDataURL(f);
+}
+
+// Called from onclick — fires async, updates UI inline
+async function qpImport(vid){
+  const v=(DB.vendors||[]).find(x=>x.id===vid);
+  if(!v) return;
+  const text=(document.getElementById('qp-text')?.value||'').trim();
+
+  // ── If a FILE is uploaded (no text pasted) → use AI to read it ──────────────
+  if(_qpFile && !text){
+    await qpImportFromFile(vid, v);
+    return;
+  }
+
+  // ── TEXT MODE: existing regex parser ────────────────────────────────────────
+  const lines=[];
+  let detectedCurrency='USD ($)';
+  const symMap={'₹':'INR (₹)','$':'USD ($)','€':'EUR (€)','£':'GBP (£)'};
+
+  if(text){
+    const textLines=text.split('\n').map(l=>l.trim()).filter(l=>l.length>2);
+    textLines.forEach(line=>{
+      const sym=line.match(/[₹$€£]/);
+      if(sym) detectedCurrency=symMap[sym[0]]||'USD ($)';
+      if(/^(dear|hi |hello|thank|regards|from:|to:|date:|ref:|subject:|quote no|invoice no)/i.test(line)) return;
+      const mTax=line.match(/(?:tax|gst|vat|igst|cgst|sgst|cess)[^0-9₹$€£]*[₹$€£]?\s*([\d,]+\.?\d*)/i);
+      if(mTax){
+        const key=currentId+':received';
+        if(!DB.quoteMeta) DB.quoteMeta={};
+        if(!DB.quoteMeta[key]) DB.quoteMeta[key]={currency:detectedCurrency,tax:'',delivery:'',pdfData:null,pdfName:''};
+        DB.quoteMeta[key].tax=(parseFloat(mTax[1].replace(/,/g,''))||0).toString();
+        DB.quoteMeta[key].currency=detectedCurrency;
+        return;
+      }
+      const mDel=line.match(/(?:delivery|shipping|freight|logistics|transport|courier)[^0-9₹$€£]*[₹$€£]?\s*([\d,]+\.?\d*)/i);
+      if(mDel){
+        const key=currentId+':received';
+        if(!DB.quoteMeta) DB.quoteMeta={};
+        if(!DB.quoteMeta[key]) DB.quoteMeta[key]={currency:detectedCurrency,tax:'',delivery:'',pdfData:null,pdfName:''};
+        DB.quoteMeta[key].delivery=(parseFloat(mDel[1].replace(/,/g,''))||0).toString();
+        return;
+      }
+      const mA=line.match(/^(.+?)\s*[-–]\s*([\d.]+)\s*(\w+)?\s*@\s*[₹$€£]?\s*([\d,]+\.?\d*)\s*(?:each|\/\w+)?\s*=?\s*[₹$€£]?\s*([\d,]+\.?\d*)?/i);
+      if(mA){
+        const qty=parseFloat(mA[2])||1; const up=parseFloat(mA[4].replace(/,/g,''))||0;
+        const tot=mA[5]?parseFloat(mA[5].replace(/,/g,'')):qty*up;
+        lines.push({description:mA[1].trim(),qty:String(qty),unit:mA[3]||'',unitPrice:String(up),total:tot.toFixed(2),currency:detectedCurrency,vendorId:vid,vendorName:v.name}); return;
+      }
+      const mB=line.match(/^(.+?)\s+([\d.]+)\s+(\w+)\s+(?:@|at|x)\s*[₹$€£]?\s*([\d,]+\.?\d*)\s*=?\s*[₹$€£]?\s*([\d,]+\.?\d*)?/i);
+      if(mB){
+        const qty=parseFloat(mB[2])||1; const up=parseFloat(mB[4].replace(/,/g,''))||0;
+        const tot=mB[5]?parseFloat(mB[5].replace(/,/g,'')):qty*up;
+        lines.push({description:mB[1].trim(),qty:String(qty),unit:mB[3]||'',unitPrice:String(up),total:tot.toFixed(2),currency:detectedCurrency,vendorId:vid,vendorName:v.name}); return;
+      }
+      const mC=line.match(/^(.{4,70}?)(?:\s*[:–-]\s*)[₹$€£]?\s*([\d,]+\.?\d+)\s*$/);
+      if(mC && parseFloat(mC[2].replace(/,/g,''))>0){
+        const tot=parseFloat(mC[2].replace(/,/g,''));
+        lines.push({description:mC[1].trim(),qty:'1',unit:'',unitPrice:String(tot),total:tot.toFixed(2),currency:detectedCurrency,vendorId:vid,vendorName:v.name});
+      }
+    });
+  }
+
+  if(lines.length===0){ toast('Nothing found — paste quote text or upload a PDF','error'); return; }
+  lines.forEach(l=>{ DB.quotes.push({id:makeId(),materialId:currentId,quoteType:'received',...l,createdAt:Date.now()}); });
+  if(_qpFile){
+    const key=currentId+':received';
+    if(!DB.quoteMeta) DB.quoteMeta={};
+    if(!DB.quoteMeta[key]) DB.quoteMeta[key]={currency:detectedCurrency,tax:'',delivery:'',pdfData:null,pdfName:''};
+    DB.quoteMeta[key].pdfData=_qpFile; DB.quoteMeta[key].pdfName=_qpFileName;
+  }
+  _qpFile=null; _qpFileName=''; _qpFileType='';
+  save(); document.getElementById('qp-overlay')?.remove(); currentTab='quotes';
+  renderTabContent(); renderDetail();
+  toast(lines.length+' line'+(lines.length!==1?'s':'')+' imported to Received Quotes');
+}
+
+// ── PDF EXTRACTION via PDF.js (client-side, no API needed) ──────────────────
+async function qpImportFromFile(vid, v){
+  // Inject spinner CSS once
+  if(!document.getElementById('qps-style')){
+    const s=document.createElement('style');
+    s.id='qps-style';
+    s.textContent='@keyframes qpspin{to{transform:rotate(360deg)}} .qp-spin{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid rgba(13,27,62,.2);border-top-color:var(--navy);animation:qpspin .75s linear infinite;vertical-align:middle;margin-right:8px}';
+    document.head.appendChild(s);
+  }
+
+  const btn=document.getElementById('qp-main-btn');
+  const prog=document.getElementById('qp-progress');
+
+  function setProgress(html, isErr){
+    if(prog){
+      prog.style.display='block';
+      prog.innerHTML='<div style="padding:12px 14px;border-radius:8px;font-size:12px;background:'+(isErr?'#fff5f5':'#EFF6FF')+';border:1px solid '+(isErr?'#fecaca':'#93C5FD')+'">'+html+'</div>';
+    }
+  }
+  function resetBtn(){
+    if(btn){ btn.disabled=false; btn.innerHTML='&#9889; Parse &amp; Import to Received Quotes &rarr;'; }
+  }
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="qp-spin"></span>Reading PDF...'; }
+
+  try{
+    // ── STEP 1: Extract text from PDF using PDF.js ────────────────────────────
+    setProgress('<span class="qp-spin" style="border-top-color:#1D4ED8"></span> <span style="color:#1D4ED8">Reading PDF — extracting text...</span>');
+
+    const isPdf=/\.pdf$/i.test(_qpFileName);
+    const isImg=/\.(jpe?g|png|gif|webp|bmp)$/i.test(_qpFileName);
+    let fullText='';
+
+    if(isPdf){
+      // Configure PDF.js worker
+      if(window.pdfjsLib){
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      } else {
+        throw new Error('PDF.js not loaded. Please refresh and try again.');
+      }
+
+      // Convert base64 data URL to Uint8Array
+      const b64=_qpFile.split(',')[1];
+      const binary=atob(b64);
+      const bytes=new Uint8Array(binary.length);
+      for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+
+      // Load and parse PDF
+      const pdfDoc=await pdfjsLib.getDocument({data:bytes}).promise;
+      const numPages=pdfDoc.numPages;
+      const pageTexts=[];
+
+      for(let i=1;i<=numPages;i++){
+        const page=await pdfDoc.getPage(i);
+        const tc=await page.getTextContent();
+        // Join items with space, preserve line breaks with newlines
+        let prevY=null;
+        let pageText='';
+        tc.items.forEach(item=>{
+          if(prevY!==null && Math.abs(item.transform[5]-prevY)>3){
+            pageText+='\n';
+          }
+          pageText+=item.str+' ';
+          prevY=item.transform[5];
+        });
+        pageTexts.push(pageText.trim());
+      }
+      fullText=pageTexts.join('\n');
+    } else if(isImg){
+      throw new Error('Image files cannot be read as text. Please paste the quote text in the box above.');
+    } else {
+      // Plain text file
+      const b64=_qpFile.split(',')[1];
+      fullText=atob(b64);
+    }
+
+    if(!fullText||fullText.trim().length<20){
+      throw new Error('Could not extract text from this PDF. It may be a scanned image. Please paste the quote text in the box above.');
+    }
+
+    setProgress('<span class="qp-spin" style="border-top-color:#1D4ED8"></span> <span style="color:#1D4ED8">Text extracted — parsing line items, prices, tax &amp; delivery...</span>');
+
+    // ── STEP 2: Parse extracted text — handles Indian GST invoice format ─────────
+    const lines=[];
+    let detectedCurrency='INR (₹)';
+    const symMap={'₹':'INR (₹)','$':'USD ($)','€':'EUR (€)','£':'GBP (£)'};
+    let parsedTax=null, parsedDelivery=null, parsedGrand=null, parsedSubtotal=null, parsedTaxLabel='GST';
+
+    const textLines=fullText.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+
+    // Detect currency
+    textLines.forEach(line=>{
+      const symMatch=line.match(/[₹$€£]/);
+      if(symMatch) detectedCurrency=symMap[symMatch[0]]||detectedCurrency;
+    });
+
+    // parseAmt: handles Indian number format (5,18,560.00 → 518560.00)
+    function parseAmt(s){
+      if(!s) return 0;
+      const cleaned=(s+'').replace(/[₹$€£\s]/g,'').replace(/,/g,'');
+      return parseFloat(cleaned)||0;
+    }
+
+    // normaliseUnit: map invoice abbreviations to dropdown values
+    function normaliseUnit(u){
+      if(!u) return '';
+      const map={
+        'sqmt':'sq meter','sqm':'sq meter','sqmtr':'sq meter','sqmeter':'sq meter',
+        'sq.mt':'sq meter','sq.mtr':'sq meter','sq.m':'sq meter','sqft':'sq ft',
+        'sq.ft':'sq ft','sqyd':'sq yard','sq.yd':'sq yard','lft':'linear ft',
+        'lmt':'linear meter','lmtr':'linear meter','pcs':'pieces','pc':'pieces',
+        'nos':'pieces','no':'pieces','sets':'sets','set':'sets','kgs':'kg',
+        'kg':'kg','ton':'tons','tons':'tons','ltr':'liters','lts':'liters',
+        'rll':'rolls','roll':'rolls','box':'boxes','boxes':'boxes',
+        'sht':'sheets','sheet':'sheets','unit':'units','units':'units'
+      };
+      return map[u.toLowerCase().replace(/\.| /g,'')] || u;
+    }
+
+    // extractVendorName: try to find supplier/vendor name from invoice header
+    function extractVendorName(lines){
+      for(let i=0;i<Math.min(lines.length,20);i++){
+        const l=lines[i];
+        // Skip common header labels
+        if(/invoice|quotation|bill|date|gstin|pan|mobile|phone|email|state|address|to:|from:|dear|subject|ref/i.test(l)) continue;
+        if(/^\s*$/.test(l) || l.length<3) continue;
+        // A standalone line of 3–80 chars with no numbers is likely a company name
+        if(l.length>=3 && l.length<=80 && !/^\d/.test(l) && /[a-z]/i.test(l)){
+          // Looks like a name if it contains capitals or common business words
+          if(/[A-Z]{2,}|pvt|ltd|llp|corp|trading|goods|industries|enterprise|supply|material|hardware|aluminium|acp/i.test(l)){
+            return l.trim();
+          }
+        }
+      }
+      return null;
+    }
+
+    // isNumericToken: is this string purely a number (possibly Indian-formatted)?
+    function isNumericToken(s){ return /^[₹]?[\d,]+\.?\d*$/.test((s||'').trim()); }
+
+    // isHSN: 4–8 digit code, no decimal
+    function isHSN(s){ return /^\d{4,8}$/.test((s||'').trim()); }
+
+    // ── PASS 1: Scan for tax rows, delivery, grand total, subtotal ────────────
+    // Accumulate CGST + SGST together; "Total" row = grand total for Tally invoices
+    let cgstAmt=0, sgstAmt=0, igstAmt=0;
+
+    textLines.forEach(line=>{
+      // Grand total — Tally uses "Total" in the total row with ₹ sign
+      if(/^\s*total\s*$/i.test(line.replace(/[₹\d,. ]/g,'').trim())){
+        const m=line.match(/[\d,]+\.?\d*/g);
+        if(m){ const v=parseAmt(m[m.length-1]); if(v>1000) parsedGrand=v; }
+      }
+      // Grand total — explicit labels
+      else if(/grand\s*total|net\s*payable|amount\s*payable|total\s*amount\s*due/i.test(line)){
+        const m=line.match(/[\d,]+\.?\d*/g);
+        if(m){ const v=parseAmt(m[m.length-1]); if(v>0) parsedGrand=v; }
+      }
+      // Subtotal / taxable value
+      else if(/sub[\s-]?total|taxable\s*(?:value|amount)|basic\s*(?:total|value)/i.test(line)){
+        const m=line.match(/[\d,]+\.?\d*/g);
+        if(m){ const v=parseAmt(m[m.length-1]); if(v>0) parsedSubtotal=v; }
+      }
+      // CGST
+      else if(/\bcgst\b/i.test(line) && !/delivery|freight|sub.*total|grand/i.test(line)){
+        const m=line.match(/[\d,]+\.?\d*/g);
+        const amounts=(m||[]).map(parseAmt).filter(x=>x>=1);
+        // take the last significant amount (not a percentage)
+        const v=amounts.filter(x=>x>10).sort((a,b)=>b-a)[0];
+        if(v) cgstAmt+=v;
+      }
+      // SGST
+      else if(/\bsgst\b/i.test(line) && !/delivery|freight|sub.*total|grand/i.test(line)){
+        const m=line.match(/[\d,]+\.?\d*/g);
+        const amounts=(m||[]).map(parseAmt).filter(x=>x>=1);
+        const v=amounts.filter(x=>x>10).sort((a,b)=>b-a)[0];
+        if(v) sgstAmt+=v;
+      }
+      // IGST
+      else if(/\bigst\b/i.test(line) && !/delivery|freight|sub.*total|grand/i.test(line)){
+        const m=line.match(/[\d,]+\.?\d*/g);
+        const amounts=(m||[]).map(parseAmt).filter(x=>x>=1);
+        const v=amounts.filter(x=>x>10).sort((a,b)=>b-a)[0];
+        if(v) igstAmt+=v;
+      }
+      // Generic GST/TAX/VAT line (not CGST/SGST/IGST individually)
+      else if(/\b(?:gst|vat|tax|cess)\b/i.test(line) && !/cgst|sgst|igst|delivery|freight|sub.*total|grand|rounding/i.test(line)){
+        const pct=line.match(/(\d+\.?\d*)\s*%/);
+        if(pct) parsedTaxLabel='GST '+pct[1]+'%';
+        const m=line.match(/[\d,]+\.?\d*/g);
+        const amounts=(m||[]).map(parseAmt).filter(x=>x>10);
+        const v=amounts.sort((a,b)=>b-a)[0];
+        if(v) parsedTax=(parsedTax||0)+v;
+      }
+      // Delivery / freight — must check before generic GST to catch "Delivery Charges GST Sale"
+      else if(/delivery|freight\s*charge|shipping\s*charge/i.test(line) && !/sub.*total|grand/i.test(line)){
+        // Extract the last number on the line as the delivery amount
+        const m=line.match(/[\d,]+\.?\d*/g);
+        const amounts=(m||[]).map(parseAmt).filter(x=>x>=1);
+        const v=amounts.sort((a,b)=>b-a)[0];
+        if(v) parsedDelivery=(parsedDelivery||0)+v;
+      }
+    });
+
+    // Combine CGST + SGST + IGST into single tax figure
+    const splitTax=cgstAmt+sgstAmt+igstAmt;
+    if(splitTax>0){
+      parsedTax=(parsedTax||0)+splitTax;
+      // Build label
+      const parts=[];
+      if(cgstAmt>0) parts.push('CGST');
+      if(sgstAmt>0) parts.push('SGST');
+      if(igstAmt>0) parts.push('IGST');
+      parsedTaxLabel=parts.join('+');
+    }
+
+    // ── PASS 2: Extract line items from invoice table ─────────────────────────
+    // Strategy: look for rows that have: description text + quantity number + unit + rate + amount
+    // Skip: header rows, tax rows, delivery rows, grand total rows, footer rows
+
+    const SKIP_LINE=/cgst|sgst|igst|\bvat\b|\btax\b|\bcess\b|delivery\s*charge|freight\s*charge|shipping\s*charge|grand\s*total|sub[\s-]?total|taxable\s*value|rounding\s*off|amount\s*chargeable|e\.\s*&\s*o|bank\s*details|account\s*no|ifsc|amount\s*in\s*words|declaration|authoris|signatur|si\s*no|hsn[\s\/]sac|description\s*of\s*goods|due\s*on|disc\.?\s*%|^\s*total\s*[\d]/i;
+
+    // Multi-line description accumulator for Tally-style invoices
+    // We'll do a two-sub-pass: first collect candidate rows, then merge multi-line descriptions
+    const candidateRows=[];
+
+    textLines.forEach((line,idx)=>{
+      if(SKIP_LINE.test(line)) return;
+      if(line.length<3) return;
+      // Skip pure header / label lines with no numbers
+      if(!/\d/.test(line)) return;
+
+      // Try to parse a row with: [sl_no?] description qty unit rate [per] [disc] amount
+      // Tally PDF columns are usually space-separated with wide gaps
+
+      // Split by 2+ spaces or tabs to get columns
+      const cols=line.split(/\s{2,}|\t/).map(s=>s.trim()).filter(s=>s.length>0);
+      if(cols.length<3) return;
+
+      // The last column should be the Amount
+      const lastCol=cols[cols.length-1];
+      const amtVal=parseAmt(lastCol);
+      if(amtVal<1) return; // no valid amount at end
+
+      // Find rate/unit price column (second to last non-unit column)
+      // Look for a column with a decimal number (rate like 926.00)
+      let rateVal=0, qtyVal=0, unitStr='', descParts=[];
+
+      // Try to identify columns by their content type
+      for(let i=0;i<cols.length-1;i++){
+        const col=cols[i];
+        if(isHSN(col)) continue; // skip HSN code
+        if(/^\d{1,2}$/.test(col) && i===0) continue; // skip sl no
+        if(/^\d+[\/-]\w+[\/-]\d+/.test(col)) continue; // skip dates like 23-Feb-26
+        if(/sqm|sqft|sqmt|mtr|nos|pcs|kg|pkt|set|roll|unit|ltr|each/i.test(col)){
+          unitStr=normaliseUnit(col);
+          continue;
+        }
+        // Quantity: a number with optional decimal / "560.0000 sqmt" format
+        const qm=col.match(/^([\d,]+\.?\d*)(?:\s*([a-z]+))?$/i);
+        if(qm && !unitStr){
+          const n=parseAmt(qm[1]);
+          if(n>0 && n<100000 && qm[2]) { qtyVal=n; unitStr=normaliseUnit(qm[2]); continue; }
+          if(n>0 && n<100000 && !rateVal) { qtyVal=n; continue; }
+        }
+        // Rate: decimal number
+        const rm=col.match(/^([\d,]+\.\d{1,4})$/);
+        if(rm){ const n=parseAmt(rm[1]); if(n>0) { rateVal=n; continue; } }
+
+        // Otherwise it's part of the description
+        if(!/^\d+\.?\d*$/.test(col)) descParts.push(col);
+      }
+
+      if(amtVal>0 && (rateVal>0||qtyVal>0)){
+        const desc=descParts.join(' ').trim();
+        if(desc.length>1){
+          candidateRows.push({
+            description:desc, qty:qtyVal||1, unit:unitStr,
+            unitPrice:rateVal||amtVal, total:amtVal,
+            currency:detectedCurrency, vendorId:vid, vendorName:v.name,
+            _lineIdx:idx
+          });
+        }
+      }
+    });
+
+    // Merge consecutive multi-line descriptions (e.g. "DIBOND ACP SHEET 3MM" + "D-202 Sparkling Silver...")
+    // If a textLine immediately follows a candidate row and looks like a description continuation, append it
+    candidateRows.forEach((row,ri)=>{
+      const nextIdx=row._lineIdx+1;
+      if(nextIdx<textLines.length){
+        const nextLine=textLines[nextIdx].trim();
+        // Continuation: no numbers, not a skip line, not too long
+        if(nextLine.length>2 && !/\d{4,}/.test(nextLine) && !SKIP_LINE.test(nextLine) && !/^\s*\d+\s*$/.test(nextLine)){
+          // Only merge if the next candidate row is not immediately after
+          const nextRowIdx=candidateRows[ri+1]?._lineIdx;
+          if(!nextRowIdx||nextRowIdx>nextIdx){
+            row.description=(row.description+' '+nextLine).trim();
+          }
+        }
+      }
+    });
+
+    // Build final lines array
+    candidateRows.forEach(row=>{
+      delete row._lineIdx;
+      const finalRow=Object.assign({},row);
+      // Strip trailing zeros: 560.0000 → 560
+      const qNum=parseFloat(finalRow.qty)||0;
+      finalRow.qty=String(qNum%1===0?Math.round(qNum):qNum);
+      finalRow.unitPrice=String(finalRow.unitPrice?parseFloat(finalRow.unitPrice).toFixed(2):'');
+      finalRow.total=String(parseFloat(finalRow.total).toFixed(2));
+      lines.push(finalRow);
+    });
+
+    // ── PASS 2B: Fallback patterns if table parse found nothing ──────────────
+    if(lines.length===0){
+      textLines.forEach(line=>{
+        if(SKIP_LINE.test(line)) return;
+        // Pattern A: "Description qty unit @ rate = total"
+        const mA=line.match(/^(.+?)\s+([\d.]+)\s*([a-z]+(?:\s+[a-z]+)?)\s+(?:@|at)\s*[₹$€£]?\s*([\d,]+\.?\d*)\s*=?\s*[₹$€£]?\s*([\d,]+\.?\d*)?/i);
+        if(mA){ const qty=parseFloat(mA[2])||1,up=parseAmt(mA[4]),tot=mA[5]?parseAmt(mA[5]):qty*up; if(up>0||tot>0){lines.push({description:mA[1].trim(),qty:String(qty),unit:mA[3].trim(),unitPrice:String(up),total:tot.toFixed(2),currency:detectedCurrency,vendorId:vid,vendorName:v.name});return;} }
+        // Pattern B: "Description - qty unit @ rate"
+        const mB=line.match(/^(.+?)\s*[-–]\s*([\d.]+)\s*(\w+)?\s*@\s*[₹$€£]?\s*([\d,]+\.?\d*)\s*=?\s*[₹$€£]?\s*([\d,]+\.?\d*)?/i);
+        if(mB){ const qty=parseFloat(mB[2])||1,up=parseAmt(mB[4]),tot=mB[5]?parseAmt(mB[5]):qty*up; if(up>0||tot>0){lines.push({description:mB[1].trim(),qty:String(qty),unit:mB[3]||'',unitPrice:String(up),total:tot.toFixed(2),currency:detectedCurrency,vendorId:vid,vendorName:v.name});return;} }
+      });
+    }
+
+    if(lines.length===0){
+      throw new Error('Could not extract line items from this PDF. It may be a scanned image (photo). Please paste the quote text in the box above instead.');
+    }
+
+    // ── Finalise totals ───────────────────────────────────────────────────────
+    const linesSub=lines.reduce((s,l)=>s+(parseFloat(l.total)||0),0);
+    const finalSub=parsedSubtotal||linesSub;
+    if(!parsedGrand){
+      parsedGrand=finalSub+(parsedTax||0)+(parsedDelivery||0);
+    }
+
+    const sym=getCurrencySymbol(detectedCurrency);
+
+    // ── STEP 3: Show preview ──────────────────────────────────────────────────
+    let previewHtml='<div style="margin-top:4px">';
+    previewHtml+='<div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:8px">&#x2714; Extracted '+lines.length+' line item'+(lines.length!==1?'s':'')+' from PDF — review then confirm:</div>';
+    previewHtml+='<div style="border:1.5px solid var(--grnl);border-radius:8px;overflow:hidden;margin-bottom:10px">';
+    previewHtml+='<div style="display:grid;grid-template-columns:2fr .6fr 1fr 1fr;gap:6px;padding:7px 10px;background:var(--grnl);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--green)"><div>Description</div><div>Qty</div><div>Unit Price</div><div>Total</div></div>';
+    lines.slice(0,8).forEach(l=>{
+      previewHtml+='<div style="display:grid;grid-template-columns:2fr .6fr 1fr 1fr;gap:6px;padding:7px 10px;border-top:1px solid #f0f4f8;font-size:12px;background:#fff">';
+      previewHtml+='<div style="font-weight:500;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+esc(l.description)+'">'+esc(l.description||'—')+'</div>';
+      previewHtml+='<div style="color:var(--muted)">'+esc(String(l.qty||'—'))+(l.unit?' '+esc(l.unit):'')+'</div>';
+      previewHtml+='<div style="font-family:monospace;color:var(--text)">'+sym+esc(String(parseFloat(l.unitPrice||0).toLocaleString()))+'</div>';
+      previewHtml+='<div style="font-family:monospace;font-weight:700;color:var(--sky)">'+sym+esc(String(parseFloat(l.total||0).toLocaleString(undefined,{minimumFractionDigits:2})))+'</div>';
+      previewHtml+='</div>';
+    });
+    if(lines.length>8) previewHtml+='<div style="padding:5px 10px;font-size:10px;color:var(--muted);background:#fafcff">+ '+(lines.length-8)+' more lines...</div>';
+    previewHtml+='</div>';
+
+    // Totals block
+    previewHtml+='<div style="background:var(--navy);border-radius:8px;padding:10px 14px;margin-bottom:10px">';
+    previewHtml+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">';
+    const sub=finalSub;
+    previewHtml+='<div style="text-align:center"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#8BA4C0;letter-spacing:.5px">Subtotal</div><div style="font-size:13px;font-weight:700;color:#fff;font-family:monospace;margin-top:3px">'+sym+sub.toLocaleString(undefined,{minimumFractionDigits:2})+'</div></div>';
+    previewHtml+='<div style="text-align:center"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#8BA4C0;letter-spacing:.5px">'+(parsedTaxLabel||'Tax/GST')+'</div><div style="font-size:13px;font-weight:700;color:#fff;font-family:monospace;margin-top:3px">'+(parsedTax!=null?sym+parsedTax.toLocaleString(undefined,{minimumFractionDigits:2}):'—')+'</div></div>';
+    previewHtml+='<div style="text-align:center"><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#8BA4C0;letter-spacing:.5px">Delivery</div><div style="font-size:13px;font-weight:700;color:#fff;font-family:monospace;margin-top:3px">'+(parsedDelivery!=null?sym+parsedDelivery.toLocaleString(undefined,{minimumFractionDigits:2}):'—')+'</div></div>';
+    previewHtml+='</div>';
+    previewHtml+='<div style="border-top:1px solid rgba(255,255,255,.15);padding-top:10px;display:flex;justify-content:space-between;align-items:center">';
+    previewHtml+='<div style="font-size:11px;font-weight:700;color:#8BA4C0;text-transform:uppercase;letter-spacing:.5px">Grand Total</div>';
+    previewHtml+='<div style="font-size:22px;font-weight:700;color:var(--gold);font-family:monospace">'+sym+(parsedGrand?parsedGrand.toLocaleString(undefined,{minimumFractionDigits:2}):'—')+'</div>';
+    previewHtml+='</div></div>';
+
+    previewHtml+='<button id="qp-confirm-btn" onclick="qpConfirmImport(\''+vid+'\',\''+detectedCurrency+'\')" style="background:var(--green);border:none;color:#fff;border-radius:8px;padding:11px 24px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;width:100%">&#x2193; Import '+lines.length+' Line'+(lines.length!==1?'s':'')+' + Tax &amp; Delivery into Received Quotes</button>';
+    previewHtml+='</div>';
+
+    // Store for confirm step — include material detail hints
+    const _extractedVendor=extractVendorName(textLines);
+    const _firstLine=lines[0]||{};
+    window._qpParsed={lines, tax:parsedTax, delivery:parsedDelivery, subtotal:finalSub, grandTotal:parsedGrand, currency:detectedCurrency, taxLabel:parsedTaxLabel, extractedVendorName:_extractedVendor, firstQty:_firstLine.qty, firstUnit:_firstLine.unit};
+
+    setProgress(previewHtml);
+    if(btn) btn.style.display='none';
+
+  }catch(err){
+    setProgress('&#x26A0; '+esc(err.message), true);
+    resetBtn();
+  }
+}
+
+
+
+function qpConfirmImport(vid, cur){
+  const v=(DB.vendors||[]).find(x=>x.id===vid);
+  const p=window._qpParsed;
+  if(!v||!p||!p.lines||!p.lines.length){ toast('No data to import','error'); return; }
+
+  const sym=getCurrencySymbol(cur);
+
+  // Push one quote row per line item
+  p.lines.forEach((l,idx)=>{
+    const qty=parseFloat(l.qty)||1;
+    const up=parseFloat(l.unitPrice)||0;
+    const tot=parseFloat(l.total)||(qty*up);
+    const row={
+      id:makeId(), materialId:currentId, quoteType:'received',
+      description:l.description||'Item',
+      qty:String(qty), unit:l.unit||'',
+      unitPrice:up?up.toFixed(2):'',
+      total:tot?tot.toFixed(2):'',
+      currency:cur, vendorId:vid, vendorName:v.name,
+      createdAt:Date.now()
+    };
+    // Attach tax + delivery to the first line item so the grand total shows correctly
+    if(idx===0){
+      if(p.tax!=null && p.tax!==0)      row.rowTax      = parseFloat(p.tax).toFixed(2);
+      if(p.delivery!=null && p.delivery!==0) row.rowDelivery = parseFloat(p.delivery).toFixed(2);
+    }
+    DB.quotes.push(row);
+  });
+
+  // Attach PDF
+  if(_qpFile){
+    const key=currentId+':received';
+    if(!DB.quoteMeta) DB.quoteMeta={};
+    if(!DB.quoteMeta[key]) DB.quoteMeta[key]={currency:cur,tax:'',delivery:'',pdfData:null,pdfName:''};
+    DB.quoteMeta[key].pdfData=_qpFile;
+    DB.quoteMeta[key].pdfName=_qpFileName;
+    DB.quoteMeta[key].currency=cur;
+  }
+
+  // ── AUTO-UPDATE MATERIAL DETAILS ──────────────────────────────────────────
+  const mat=getMaterial(currentId);
+  if(mat){
+    let matUpdated=false;
+    // Vendor name — from invoice header, fallback to vendor card name
+    const vendorName=p.extractedVendorName||v.name;
+    if(vendorName && !mat.vendor){ mat.vendor=vendorName; matUpdated=true; }
+
+    // Qty Required — from first line item quantity + unit
+    if(p.firstQty && !mat.qtyRequired){
+      mat.qtyRequired=String(parseFloat(p.firstQty)||'');
+      mat.unitRequired=p.firstUnit||'sq meter';
+      matUpdated=true;
+    }
+
+    // Cost — set to grand total
+    if(p.grandTotal && !mat.cost){
+      const symStr=getCurrencySymbol(cur);
+      mat.cost=symStr+parseFloat(p.grandTotal).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+      matUpdated=true;
+    }
+
+    if(matUpdated) save();
+  }
+
+  _qpFile=null; _qpFileName=''; _qpFileType=''; window._qpParsed=null;
+  save();
+  document.getElementById('qp-overlay')?.remove();
+  currentTab='quotes';
+  renderTabContent(); renderDetail();
+  toast(p.lines.length+' line'+(p.lines.length!==1?'s':'')+' imported — Material Details auto-updated!');
+}
+
+
+
+function renderVendors(){
+  const vendors=getVendors(currentId);
+  const m=getMaterial(currentId)||{};
+  const matName=esc(m.name||'');
+  const matQty=`${m.qtyRequired||''} ${m.unitRequired||''}`.trim();
+  const matSize=esc(m.size||'As per spec');
+  const matThick=esc(m.thickness||'As per spec');
+  const matFinish=esc(m.finishType||'As per spec');
+
+  return `<div>
+    <!-- ADD FORM -->
+    <div class="card card-p" style="margin-bottom:18px">
+      <div style="font-weight:700;color:var(--navy);margin-bottom:4px;font-size:14px;display:flex;align-items:center;gap:8px">
+        <div style="width:22px;height:22px;background:var(--sky);color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">+</div>
+        Add Vendor
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Add vendors who supply this material. Then use <strong>Parse & Import Quote</strong> to auto-extract line items from their emails directly into Received Quotes.</div>
+      <div class="form-row">
+        <div class="form-group"><label>Vendor Name *</label><input id="nv-name" placeholder="e.g. Aludecor India Ltd"></div>
+        <div class="form-group"><label>Email Address *</label><input id="nv-email" type="email" placeholder="vendor@company.com"></div>
+        <div class="form-group"><label>Company / Factory</label><input id="nv-company" placeholder="Company or factory name"></div>
+        <div class="form-group"><label>Phone</label><input id="nv-phone" placeholder="+91 98765 43210"></div>
+      </div>
+      <button class="btn btn-primary" onclick="addVendor('${currentId}')">+ Add Vendor</button>
+    </div>
+
+    <!-- VENDOR CARDS -->
+    ${vendors.length===0?`
+      <div class="empty-state">
+        <div class="empty-icon">🏭</div>
+        <div class="empty-title">No vendors yet</div>
+        <div class="empty-sub">Add a vendor above to start importing quotes from their emails</div>
+      </div>`
+    :vendors.map(v=>`
+      <div class="card card-p" style="margin-bottom:14px;border-left:4px solid var(--sky)">
+        <!-- Header -->
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:42px;height:42px;border-radius:10px;background:var(--skyl);border:2px solid var(--sky);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--sky);flex-shrink:0">${v.name[0].toUpperCase()}</div>
+            <div>
+              <div style="font-size:15px;font-weight:700;color:var(--navy)">${esc(v.name)}</div>
+              ${v.company?`<div style="font-size:11px;color:var(--muted);margin-top:1px">${esc(v.company)}</div>`:''}
+            </div>
+          </div>
+          <button class="delete-btn" onclick="deleteVendor('${v.id}')" style="font-size:18px;opacity:.5">×</button>
+        </div>
+
+        <!-- Contact chips -->
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+          ${v.email?`<div style="display:flex;align-items:center;gap:6px;background:var(--skyl);border:1px solid #b8d8f5;padding:6px 12px;border-radius:8px">
+            <span>📧</span><span style="font-size:12px;color:var(--navy);font-family:monospace">${esc(v.email)}</span></div>`:''}
+          ${v.phone?`<div style="display:flex;align-items:center;gap:6px;background:#f0f4f8;border:1px solid var(--border);padding:6px 12px;border-radius:8px">
+            <span>📞</span><span style="font-size:12px;color:var(--navy)">${esc(v.phone)}</span></div>`:''}
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:12px;border-top:1px solid #f0f4f8">
+          ${v.email?`<button onclick="openGmail('${v.id}')"
+            style="display:flex;align-items:center;gap:6px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s"
+            onmouseenter="this.style.background='#fee2e2'" onmouseleave="this.style.background='#fef2f2'">
+            <svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#dc2626"/></svg>
+            Open Gmail → ${esc(v.email)}
+          </button>`:''}
+          <button onclick="openQuoteParser('${v.id}')"
+            style="display:flex;align-items:center;gap:6px;background:var(--skyl);border:1px solid var(--sky);color:var(--sky);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s"
+            onmouseenter="this.style.background='#c3ddf5'" onmouseleave="this.style.background='var(--skyl)'">
+            ⚡ Parse & Import Quote
+          </button>
+          <a href="mailto:${esc(v.email||'')}?subject=Quote Request — ${matName}&body=Dear ${esc(v.name)},%0A%0AWe would like to request a quote for the following material:%0A%0AMaterial%3A ${matName}%0AQuantity Required%3A ${matQty}%0ASize%3A ${matSize}%0AThickness%3A ${matThick}%0AFinish%3A ${matFinish}%0A%0AKindly share your best price at the earliest.%0A%0ARegards%2C%0APooja%0AProject Manager%20%7C%20Go%20Livio%0Apooja%40golivio.com"
+            style="display:flex;align-items:center;gap:6px;background:var(--grnl);border:1px solid #9fcfb2;color:var(--green);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;text-decoration:none;transition:background .15s"
+            onmouseenter="this.style.background='#b8ddc8'" onmouseleave="this.style.background='var(--grnl)'">
+            ✉ Send Quote Request
+          </a>
+        </div>
+
+        <!-- Imported quotes summary -->
+        ${(()=>{
+          const vq=(DB.quotes||[]).filter(q=>q.materialId===currentId&&q.vendorId===v.id);
+          if(!vq.length) return `<div style="margin-top:12px;font-size:11px;color:var(--muted);padding:8px 0;border-top:1px solid #f0f4f8">No quotes imported yet from this vendor.</div>`;
+          const sym=getCurrencySymbol(vq[0]?.currency||'USD ($)');
+          const tot=vq.reduce((s,q)=>s+(parseFloat(q.total)||0),0);
+          return `<div style="margin-top:12px;padding:10px 12px;background:var(--skyl);border-radius:8px;border-top:1px solid #f0f4f8">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px">Imported from this vendor (${vq.length} line${vq.length!==1?'s':''})</div>
+            ${vq.slice(0,3).map(q=>`<div style="display:flex;justify-content:space-between;font-size:11px;padding:2px 0;border-bottom:1px solid rgba(0,0,0,.05)">
+              <span style="color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:280px">${esc(q.description)}</span>
+              <span style="font-family:monospace;color:var(--navy);font-weight:600;flex-shrink:0">${getCurrencySymbol(q.currency)}${parseFloat(q.total||0).toLocaleString()}</span>
+            </div>`).join('')}
+            ${vq.length>3?`<div style="font-size:10px;color:var(--muted);margin-top:3px">+${vq.length-3} more lines</div>`:''}
+            <div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:6px;border-top:1px solid #c3ddf5;font-weight:700">
+              <span style="font-size:12px;color:var(--navy)">Vendor Total</span>
+              <span style="font-size:13px;color:var(--sky);font-family:monospace">${sym}${tot.toLocaleString(undefined,{minimumFractionDigits:2})}</span>
+            </div>
+          </div>`;
+        })()}
+      </div>`).join('')}
+
+    <!-- HOW IT WORKS -->
+    <div style="background:var(--skyl);border:1px solid #b8d8f5;border-radius:12px;padding:14px 16px;margin-top:8px">
+      <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">📧 How to import quotes from email</div>
+      <ol style="font-size:12px;color:var(--muted);line-height:1.9;padding-left:18px">
+        <li>Click <strong>Open Gmail</strong> → Gmail opens filtered to that vendor's emails</li>
+        <li>Find the quote email → copy the full email body text</li>
+        <li>Click <strong>Parse & Import Quote</strong> → paste the text → the system auto-extracts item names, quantities, unit prices, tax and delivery</li>
+        <li>All line items are added to <strong>Received Quotes</strong> automatically — PDF is attached too</li>
+        <li>Use <strong>Send Quote Request</strong> to email the vendor with material specs pre-filled from pooja@golivio.com</li>
+      </ol>
+    </div>
+  </div>`;
+}
+
+// PO DOCUMENTS TAB
+function renderPODocs(){
+  const m=getMaterial(currentId); if(!m)return'';
+  const poDocs=m.poDocs||[];
+  const PO_STATUS_OPTS=['PO Received','PO Partial','PO Pending','No PO Yet'];
+  const badgeCls={'PO Received':'po-badge-yes','PO Partial':'po-badge-partial','PO Pending':'po-badge-partial','No PO Yet':'po-badge-no'};
+  return `<div>
+    <!-- PO Status card -->
+    <div class="po-section" style="border-left-color:${m.poStatus==='PO Received'?'var(--green)':m.poStatus==='No PO Yet'?'var(--red)':'var(--gold)'}">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px">
+        <div>
+          <div style="font-weight:700;font-size:15px;color:var(--navy);margin-bottom:6px">Purchase Order Status</div>
+          <span class="${badgeCls[m.poStatus||'']||'po-badge-no'}">${esc(m.poStatus||'Not Set')}</span>
+        </div>
+        <select class="btn btn-ghost btn-sm" onchange="updatePOStatus(this.value)" style="cursor:pointer;min-width:160px">
+          <option value="">Update status...</option>
+          ${PO_STATUS_OPTS.map(s=>`<option value="${esc(s)}" ${m.poStatus===s?'selected':''}>${esc(s)}</option>`).join('')}
+        </select>
+      </div>
+      <div style="font-size:12px;color:var(--muted)">
+        ${m.poStatus==='PO Received'?'✅ Purchase Order received — upload the PO document below for traceability.':
+          m.poStatus==='PO Partial'?'⚠️ Partial PO received — upload what you have and update when complete.':
+          m.poStatus==='PO Pending'?'🕐 PO is being processed — upload as soon as received.':
+          '❌ No PO received yet — update status and upload document when available.'}
+      </div>
+    </div>
+
+    <!-- Upload area -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div style="font-weight:700;color:var(--navy)">PO Documents <span style="font-size:12px;font-weight:400;color:var(--muted)">(${poDocs.length} uploaded)</span></div>
+      <div class="upload-area" style="padding:10px 20px;display:inline-flex;align-items:center;gap:8px;width:auto;cursor:pointer">
+        <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xlsx" onchange="uploadPODocs(this)">
+        <span class="btn btn-sky" style="pointer-events:none">📋 Upload PO Document</span>
+      </div>
+    </div>
+
+    <!-- PO doc list -->
+    ${poDocs.length===0?`
+      <div style="text-align:center;padding:40px;background:#f8fafc;border-radius:12px;border:2px dashed var(--border)">
+        <div style="font-size:36px;margin-bottom:10px">📋</div>
+        <div style="font-weight:600;color:var(--navy);margin-bottom:4px">No PO documents yet</div>
+        <div style="font-size:12px;color:var(--muted)">Upload the Purchase Order PDF or image above</div>
+      </div>`
+    :`<div style="display:flex;flex-direction:column;gap:8px">
+        ${poDocs.map(d=>{
+          const isImg=['jpg','jpeg','png','gif'].includes(d.fileType?.toLowerCase());
+          const isPdf=d.fileType?.toLowerCase()==='pdf';
+          return `<div class="po-doc-item" style="background:#fff;border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)">
+            <span style="font-size:22px">${isPdf?'📄':isImg?'🖼️':'📎'}</span>
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:13px;color:var(--navy)">${esc(d.filename)}</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">${(d.fileType||'').toUpperCase()} · Uploaded ${new Date(d.uploadedAt).toLocaleDateString()}</div>
+            </div>
+            <a href="${d.fileData}" download="${esc(d.filename)}" class="btn btn-teal btn-sm" style="text-decoration:none">Download</a>
+            <a href="${d.fileData}" target="_blank" class="btn btn-ghost btn-sm" style="text-decoration:none">Preview</a>
+            <button class="delete-btn" onclick="deletePODoc('${d.id}')">×</button>
+          </div>`;}).join('')}
+      </div>`}
+  </div>`;
+}
+
+async function uploadPODocs(input){
+  const m=getMaterial(currentId); if(!m)return;
+  if(!m.poDocs) m.poDocs=[];
+  const files=Array.from(input.files);
+  for(const f of files){
+    const data=await readFile(f);
+    m.poDocs.push({id:makeId(),filename:f.name,fileType:f.name.split('.').pop(),fileData:data,uploadedAt:Date.now()});
+  }
+  save(); renderTabContent(); renderDetail(); toast(`${files.length} PO document(s) uploaded`); input.value='';
+}
+function deletePODoc(docId){
+  const m=getMaterial(currentId); if(!m||!confirm('Delete this PO document?'))return;
+  m.poDocs=(m.poDocs||[]).filter(d=>d.id!==docId);
+  save(); renderTabContent(); renderDetail(); toast('PO document deleted');
+}
+function updatePOStatus(status){
+  if(!status)return;
+  const m=getMaterial(currentId); if(!m)return;
+  m.poStatus=status; save(); renderTabContent(); renderDetail(); toast('PO status updated');
+}
+
+// DOCS TAB
+function renderDocs(){
+  const docs=getDocs(currentId);
+  return `<div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <p style="font-size:13px;color:var(--muted)">${docs.length} documents uploaded</p>
+      <div class="upload-area" style="padding:10px 20px;display:inline-flex;align-items:center;gap:8px;width:auto;cursor:pointer">
+        <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xlsx" onchange="uploadDocs(this)">
+        <span class="btn btn-teal" style="pointer-events:none">📁 Upload Files</span>
+      </div>
+    </div>
+    ${docs.length===0?`<div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">No documents yet</div><div class="empty-sub">Upload PDFs, images, invoices, test reports</div></div>`
+    :`<div class="doc-grid">${docs.map(d=>{
+        const isImg=['jpg','jpeg','png','gif','webp'].includes(d.fileType?.toLowerCase());
+        const isPdf=d.fileType?.toLowerCase()==='pdf';
+        return `<div class="doc-card">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <span style="font-size:28px">${isPdf?'📄':isImg?'🖼️':'📎'}</span>
+            <button class="delete-btn" onclick="deleteDoc('${d.id}')">×</button>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--navy);word-break:break-all;line-height:1.3">${esc(d.filename)}</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">${(d.fileType||'').toUpperCase()} · ${esc(d.tag)}</div>
+          </div>
+          ${isImg&&d.fileData?`<img src="${d.fileData}" alt="" class="doc-img-preview">`:''}
+          <div style="display:flex;gap:6px">
+            <a href="${d.fileData}" download="${esc(d.filename)}" class="doc-download" style="flex:1">Download</a>
+            <select class="btn btn-ghost btn-xs" onchange="updateDocTag('${d.id}',this.value)" style="cursor:pointer;flex-shrink:0">
+              ${['Invoice','Test Report','Drawing','Certification','MTC','Other'].map(t=>`<option ${d.tag===t?'selected':''}>${t}</option>`).join('')}
+            </select>
+          </div>
+        </div>`;}).join('')}</div>`}
+  </div>`;
+}
+
+async function uploadDocs(input){
+  const files=Array.from(input.files);
+  for(const f of files){
+    const data=await readFile(f);
+    DB.docs.push({id:makeId(),materialId:currentId,filename:f.name,fileType:f.name.split('.').pop(),tag:'Other',fileData:data,uploadedAt:Date.now()});
+  }
+  save(); renderTabContent(); renderDetail(); toast(`${files.length} file(s) uploaded`); input.value='';
+}
+function readFile(f){ return new Promise(res=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.readAsDataURL(f); }); }
+function deleteDoc(did){ if(!confirm('Delete?'))return; DB.docs=DB.docs.filter(x=>x.id!==did); save();renderTabContent();renderDetail();toast('Deleted'); }
+function updateDocTag(did,tag){ const d=DB.docs.find(x=>x.id===did); if(d){d.tag=tag;save();} }
+
+// NOTES TAB
+function renderNotes(){
+  const notes=getNotes(currentId);
+  return `<div>
+    <div class="card card-p" style="margin-bottom:16px">
+      <div style="font-weight:700;color:var(--navy);margin-bottom:12px">Add Note</div>
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <input id="note-author" placeholder="Your name" value="You" style="border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;width:160px;font-family:inherit">
+      </div>
+      <textarea id="note-text" rows="3" placeholder="Add update, comment or reminder... (Ctrl+Enter to save)"
+        onkeydown="if(event.key==='Enter'&&event.ctrlKey)saveNote()"
+        style="width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit;resize:vertical;margin-bottom:10px"></textarea>
+      <button class="btn btn-primary" onclick="saveNote()">Add Note</button>
+    </div>
+    ${notes.length===0?`<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-title">No notes yet</div></div>`
+    :notes.map(n=>`<div class="note-card">
+        <div class="note-avatar">${(n.author||'Y')[0].toUpperCase()}</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-weight:700;font-size:13px;color:var(--navy)">${esc(n.author||'You')}</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:10px;color:var(--muted)">${new Date(n.createdAt).toLocaleString()}</span>
+              <button class="delete-btn" onclick="deleteNote('${n.id}')">×</button>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--text);margin-top:5px;line-height:1.5;white-space:pre-wrap">${esc(n.text)}</div>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function saveNote(){
+  const text=document.getElementById('note-text')?.value?.trim();
+  const author=document.getElementById('note-author')?.value?.trim()||'You';
+  if(!text)return;
+  DB.notes.push({id:makeId(),materialId:currentId,text,author,createdAt:Date.now()});
+  save(); renderTabContent(); renderDetail(); toast('Note added');
+}
+function deleteNote(nid){ if(!confirm('Delete note?'))return; DB.notes=DB.notes.filter(x=>x.id!==nid); save();renderTabContent();renderDetail(); }
+
+// ── ADD MATERIAL ──────────────────────────────────────────────────────────────
+function populateAddModal(){
+  const catSel=document.getElementById('am-cat');
+  catSel.innerHTML=DB.settings.categories.map(c=>`<option>${esc(c)}</option>`).join('');
+  const units=DB.settings.units;
+  ['am-unit-req','am-unit-ord'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML=units.map(u=>`<option>${esc(u)}</option>`).join('');
+  });
+  // Finish types
+  const finSel=document.getElementById('am-finish');
+  if(finSel) finSel.innerHTML=`<option value="">— Select finish —</option>`+DB.settings.finishTypes.map(f=>`<option>${esc(f)}</option>`).join('');
+  // Sizes
+  const sizeSel=document.getElementById('am-size');
+  if(sizeSel) sizeSel.innerHTML=`<option value="">— Select size —</option>`+DB.settings.sizes.map(s=>`<option>${esc(s)}</option>`).join('');
+  // Thicknesses
+  const thkSel=document.getElementById('am-thickness');
+  if(thkSel) thkSel.innerHTML=`<option value="">— Select thickness —</option>`+DB.settings.thicknesses.map(t=>`<option>${esc(t)}</option>`).join('');
+  // Colors
+  populateColorSelect('am', '');
+}
+
+function populateColorSelect(prefix, selectedHex){
+  const sel=document.getElementById(prefix+'-color-select');
+  if(!sel) return;
+  sel.innerHTML=`<option value="">— Select color —</option>`
+    + DB.settings.colors.map(c=>`<option value="${esc(c.hex)}" ${selectedHex===c.hex?'selected':''}>${esc(c.name)} (${esc(c.hex)})</option>`).join('');
+  const sw=document.getElementById(prefix+'-color-swatch');
+  if(sw && selectedHex) sw.style.background=selectedHex;
+}
+function colorSelectChanged(prefix){
+  const sel=document.getElementById(prefix+'-color-select');
+  const hex=sel?.value||'';
+  const sw=document.getElementById(prefix+'-color-swatch');
+  const ci=document.getElementById(prefix+'-color-code');
+  if(sw) sw.style.background=hex||'#cccccc';
+  if(ci) ci.value=hex;
+}
+function colorPickerChanged(prefix,hex){
+  const ci=document.getElementById(prefix+'-color-code');
+  const sw=document.getElementById(prefix+'-color-swatch');
+  const sel=document.getElementById(prefix+'-color-select');
+  if(ci) ci.value=hex;
+  if(sw) sw.style.background=hex;
+  if(sel) sel.value=''; // deselect preset
+}
+function hexInputChanged(prefix,val){
+  if(/^#[0-9A-Fa-f]{6}$/.test(val)){
+    const sw=document.getElementById(prefix+'-color-swatch');
+    if(sw) sw.style.background=val;
+  }
+}
+function syncColorPicker(val){
+  if(/^#[0-9A-Fa-f]{6}$/.test(val)){
+    const pk=document.getElementById('newColorCode');
+    if(pk) pk.value=val;
+  }
+}
+function openAddModal(){ populateAddModal(); document.getElementById('addModal').style.display='flex'; document.getElementById('am-name').focus(); }
+function closeAddModal(){ document.getElementById('addModal').style.display='none'; }
+function saveMaterial(){
+  const name=document.getElementById('am-name').value.trim();
+  if(!name){ document.getElementById('am-name').style.borderColor='var(--red)'; return; }
+  const colorHex=document.getElementById('am-color-code').value||document.getElementById('am-color-select').value||'';
+  const m={
+    id:makeId(),name,
+    category:document.getElementById('am-cat').value,
+    vendor:document.getElementById('am-vendor').value,
+    qtyRequired:document.getElementById('am-qty-req').value,
+    unitRequired:document.getElementById('am-unit-req').value,
+    qtyOrdered:document.getElementById('am-qty-ord').value,
+    unitOrdered:document.getElementById('am-unit-ord').value,
+    orderDate:document.getElementById('am-order-date').value,
+    expectedDelivery:document.getElementById('am-exp-del').value,
+    actualDelivery:document.getElementById('am-act-del').value,
+    cost:document.getElementById('am-cost').value,
+    notes:document.getElementById('am-notes').value,
+    size:(document.getElementById('am-size').value==='Custom'?document.getElementById('am-size-custom').value:document.getElementById('am-size').value)||'',
+    thickness:(document.getElementById('am-thickness').value==='Custom'?document.getElementById('am-thickness-custom').value:document.getElementById('am-thickness').value)||'',
+    finishType:document.getElementById('am-finish').value,
+    colorName:(()=>{ const sel=document.getElementById('am-color-select'); const opt=sel?.options[sel.selectedIndex]; return opt?.value?opt.text.split(' (')[0]:''; })(),
+    colorHex,
+    poStatus:document.getElementById('am-po-status').value,
+    poDocs:[],
+    customFields:[],createdAt:Date.now()
+  };
+  DB.materials.push(m);
+  DB.settings.stages.forEach((name,i)=>{
+    DB.stages.push({id:makeId(),materialId:m.id,order:i,name,status:'pending',date:'',notes:''});
+  });
+  save(); closeAddModal();
+  ['am-name','am-vendor','am-qty-req','am-qty-ord','am-order-date','am-exp-del','am-act-del','am-cost','am-notes','am-color-code'].forEach(id=>{
+    const el=document.getElementById(id); if(el){el.value='';el.style.borderColor='';}
+  });
+  toast('Material added!'); openDetail(m.id);
+}
+
+// ── EDIT MATERIAL ─────────────────────────────────────────────────────────────
+function editMaterial(){
+  const m=getMaterial(currentId); if(!m)return;
+  const cats=DB.settings.categories;
+  const units=DB.settings.units;
+  const unitOpts=units.map(u=>`<option>${esc(u)}</option>`).join('');
+  document.body.insertAdjacentHTML('beforeend',`
+    <div id="editOverlay" class="modal-overlay" onclick="if(event.target===this)closeEdit()">
+    <div class="modal">
+      <div class="modal-title">Edit Material</div>
+      <div class="form-row">
+        <div class="form-group form-full"><label>Name *</label><input id="ed-name" value="${esc(m.name)}"></div>
+        <div class="form-group"><label>Category</label><select id="ed-cat">${cats.map(c=>`<option ${m.category===c?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Vendor</label><input id="ed-vendor" value="${esc(m.vendor||'')}"></div>
+        <div class="form-group"><label>Qty Required</label><div class="input-with-unit"><input id="ed-qty-req" value="${esc(m.qtyRequired||'')}"><select id="ed-unit-req">${units.map(u=>`<option ${m.unitRequired===u?'selected':''}>${esc(u)}</option>`).join('')}</select></div></div>
+        <div class="form-group"><label>Qty Ordered</label><div class="input-with-unit"><input id="ed-qty-ord" value="${esc(m.qtyOrdered||'')}"><select id="ed-unit-ord">${units.map(u=>`<option ${m.unitOrdered===u?'selected':''}>${esc(u)}</option>`).join('')}</select></div></div>
+        <div class="form-group"><label>Order Date</label><input type="date" id="ed-order-date" value="${m.orderDate||''}"></div>
+        <div class="form-group"><label>Expected Delivery</label><input type="date" id="ed-exp-del" value="${m.expectedDelivery||''}"></div>
+        <div class="form-group"><label>Actual Delivery</label><input type="date" id="ed-act-del" value="${m.actualDelivery||''}"></div>
+        <div class="form-group"><label>Cost</label><input id="ed-cost" value="${esc(m.cost||'')}"></div>
+        <div class="form-group"><label>Size</label>
+          <div style="display:flex;gap:6px">
+            <select id="ed-size" style="flex:1">${DB.settings.sizes.map(s=>`<option ${m.size===s?'selected':''}>${esc(s)}</option>`).join('')}</select>
+            <input id="ed-size-custom" value="${esc(m.size&&!DB.settings.sizes.includes(m.size)?m.size:'')}" placeholder="Custom size" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit">
+          </div>
+        </div>
+        <div class="form-group"><label>Thickness</label>
+          <div style="display:flex;gap:6px">
+            <select id="ed-thickness" style="flex:1">${DB.settings.thicknesses.map(t=>`<option ${m.thickness===t?'selected':''}>${esc(t)}</option>`).join('')}</select>
+            <input id="ed-thickness-custom" value="${esc(m.thickness&&!DB.settings.thicknesses.includes(m.thickness)?m.thickness:'')}" placeholder="Custom thickness" style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:inherit">
+          </div>
+        </div>
+        <div class="form-group"><label>Finish Type</label><select id="ed-finish">${DB.settings.finishTypes.map(f=>`<option ${m.finishType===f?'selected':''}>${esc(f)}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Color</label>
+          <div class="color-swatch-row">
+            <div class="swatch" id="ed-color-swatch" style="background:${esc(m.colorHex||'#cccccc')}" onclick="document.getElementById('ed-color-picker').click()"></div>
+            <select id="ed-color-select" onchange="colorSelectChanged('ed')" style="flex:1">
+              <option value="">— Select color —</option>
+              ${DB.settings.colors.map(c=>`<option value="${esc(c.hex)}" ${m.colorHex===c.hex?'selected':''}>${esc(c.name)} (${esc(c.hex)})</option>`).join('')}
+            </select>
+            <input type="color" id="ed-color-picker" value="${esc(m.colorHex||'#cccccc')}" style="position:absolute;opacity:0;width:1px;height:1px" onchange="colorPickerChanged('ed',this.value)">
+          </div>
+        </div>
+        <div class="form-group"><label>Color Code (Hex)</label><input id="ed-color-code" class="color-code-input" value="${esc(m.colorHex||'')}" oninput="hexInputChanged('ed',this.value)"></div>
+        <div class="form-group"><label>PO Status</label><select id="ed-po-status">
+          <option value="">— Select —</option>
+          ${['PO Received','PO Partial','PO Pending','No PO Yet'].map(s=>`<option value="${esc(s)}" ${m.poStatus===s?'selected':''}>${esc(s)}</option>`).join('')}
+        </select></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeEdit()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+      </div>
+    </div></div>`);
+}
+function closeEdit(){ document.getElementById('editOverlay')?.remove(); }
+function saveEdit(){
+  const m=getMaterial(currentId); if(!m)return;
+  m.name=document.getElementById('ed-name').value.trim()||m.name;
+  m.category=document.getElementById('ed-cat').value;
+  m.vendor=document.getElementById('ed-vendor').value;
+  m.qtyRequired=document.getElementById('ed-qty-req').value;
+  m.unitRequired=document.getElementById('ed-unit-req').value;
+  m.qtyOrdered=document.getElementById('ed-qty-ord').value;
+  m.unitOrdered=document.getElementById('ed-unit-ord').value;
+  m.orderDate=document.getElementById('ed-order-date').value;
+  m.expectedDelivery=document.getElementById('ed-exp-del').value;
+  m.actualDelivery=document.getElementById('ed-act-del').value;
+  m.cost=document.getElementById('ed-cost').value;
+  m.size=document.getElementById('ed-size-custom')?.value||document.getElementById('ed-size')?.value||m.size||'';
+  m.thickness=document.getElementById('ed-thickness-custom')?.value||document.getElementById('ed-thickness')?.value||m.thickness||'';
+  m.finishType=document.getElementById('ed-finish')?.value||m.finishType||'';
+  const edColorSel=document.getElementById('ed-color-select');
+  const edColorOpt=edColorSel?.options[edColorSel.selectedIndex];
+  m.colorHex=document.getElementById('ed-color-code')?.value||edColorSel?.value||m.colorHex||'';
+  m.colorName=edColorOpt?.value?edColorOpt.text.split(' (')[0]:m.colorName||'';
+  m.poStatus=document.getElementById('ed-po-status')?.value||m.poStatus||'';
+  save(); closeEdit(); renderDetail(); toast('Material updated');
+}
+function deleteMaterial(){
+  const m=getMaterial(currentId); if(!confirm(`Delete "${m?.name}"?`))return;
+  ['materials','stages','certs','docs','notes','quotes'].forEach(k=>{ DB[k]=DB[k].filter(x=>x.materialId!==currentId&&x.id!==currentId); });
+  DB.materials=DB.materials.filter(x=>x.id!==currentId);
+  save(); showView('list'); toast('Deleted');
+}
+
+// ── CERT MODAL ────────────────────────────────────────────────────────────────
+function populateCertTypeDropdown(){
+  const sel=document.getElementById('cm-type');
+  sel.innerHTML=`<option value="">— pick to auto-fill name —</option>`+DB.settings.certTypes.map(t=>`<option>${esc(t)}</option>`).join('');
+}
+function certTypeSelected(){
+  const val=document.getElementById('cm-type').value;
+  if(val) document.getElementById('cm-name').value=val;
+}
+function openCertModal(){
+  certFileData=null; certFileName='';
+  document.getElementById('cm-name').value='';
+  document.getElementById('cm-notes').value='';
+  document.getElementById('cm-file-label').textContent='Drop file here or click to browse';
+  populateCertTypeDropdown();
+  document.getElementById('certModal').style.display='flex';
+  document.getElementById('cm-name').focus();
+}
+function closeCertModal(){ document.getElementById('certModal').style.display='none'; }
+function handleCertFile(input){
+  const f=input.files[0]; if(!f)return;
+  certFileName=f.name;
+  document.getElementById('cm-file-label').textContent='✓ '+f.name;
+  const r=new FileReader(); r.onload=e=>{ certFileData=e.target.result; }; r.readAsDataURL(f);
+}
+function saveCert(){
+  const name=document.getElementById('cm-name').value.trim();
+  if(!name){ document.getElementById('cm-name').style.borderColor='var(--red)'; return; }
+  DB.certs.push({
+    id:makeId(),materialId:currentId,name,
+    type:document.getElementById('cm-type').value||'',
+    status:document.getElementById('cm-status').value,
+    notes:document.getElementById('cm-notes').value,
+    fileData:certFileData,fileName:certFileName,createdAt:Date.now()
+  });
+  save(); closeCertModal(); renderTabContent(); renderDetail(); toast('Certification added');
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────────────────
+function renderSettings(){
+  renderSettingList('catList', DB.settings.categories, 'categories', '#2E7FD9');
+  renderSettingList('unitList', DB.settings.units, 'units', '#E07B39');
+  renderSettingList('stageList', DB.settings.stages, 'stages', '#2A7A4B');
+  renderSettingList('certTypeList', DB.settings.certTypes, 'certTypes', '#6C3483');
+  renderSettingList('sizeList', DB.settings.sizes, 'sizes', '#2E7FD9');
+  renderSettingList('thicknessList', DB.settings.thicknesses, 'thicknesses', '#1C3F6E');
+  renderSettingList('currencyList', DB.settings.currencies, 'currencies', '#2A7A4B');
+  renderSettingList('finishList', DB.settings.finishTypes, 'finishTypes', '#0E7C7B');
+  renderColorLibList();
+}
+function addSize(){
+  const v=document.getElementById('newSizeInput').value.trim(); if(!v)return;
+  DB.settings.sizes.push(v); document.getElementById('newSizeInput').value='';
+  save(); renderSettings(); toast('Size added');
+}
+function addThickness(){
+  const v=document.getElementById('newThicknessInput').value.trim(); if(!v)return;
+  DB.settings.thicknesses.push(v); document.getElementById('newThicknessInput').value='';
+  save(); renderSettings(); toast('Thickness added');
+}
+function addCurrency(){
+  const v=document.getElementById('newCurrencyInput').value.trim(); if(!v)return;
+  DB.settings.currencies.push(v); document.getElementById('newCurrencyInput').value='';
+  save(); renderSettings(); toast('Currency added');
+}
+
+function renderColorLibList(){
+  const el=document.getElementById('colorLibList'); if(!el)return;
+  const colors=DB.settings.colors;
+  el.innerHTML=colors.map((c,i)=>`
+    <div class="editable-list-item">
+      <div style="width:24px;height:24px;border-radius:5px;background:${esc(c.hex)};border:1.5px solid #ccc;flex-shrink:0"></div>
+      <input value="${esc(c.name)}" onchange="updateColorItem(${i},'name',this.value)" style="flex:1;border:none;background:transparent;font-size:13px;font-family:inherit;outline:none;color:var(--text)">
+      <input type="color" value="${esc(c.hex)}" onchange="updateColorItem(${i},'hex',this.value)" style="border:1px solid var(--border);border-radius:5px;padding:2px;height:28px;width:36px;cursor:pointer">
+      <input value="${esc(c.hex)}" onchange="updateColorItem(${i},'hex',this.value)" style="width:80px;border:1.5px solid var(--border);border-radius:6px;padding:4px 7px;font-size:11px;font-family:monospace;color:var(--text)">
+      ${colors.length>1?`<button class="delete-btn" onclick="removeColorItem(${i})">× remove</button>`:''}
+    </div>`).join('');
+}
+function updateColorItem(idx,field,val){
+  if(DB.settings.colors[idx]) DB.settings.colors[idx][field]=val;
+  save(); renderColorLibList();
+}
+function removeColorItem(idx){
+  if(!confirm('Remove this color?'))return;
+  DB.settings.colors.splice(idx,1); save(); renderColorLibList(); toast('Color removed');
+}
+function addColor(){
+  const name=document.getElementById('newColorName').value.trim();
+  const hex=document.getElementById('newColorHex').value.trim()||document.getElementById('newColorCode').value||'#888888';
+  if(!name){ alert('Enter a color name'); return; }
+  const finalHex=/^#[0-9A-Fa-f]{6}$/.test(hex)?hex:'#888888';
+  DB.settings.colors.push({name,hex:finalHex});
+  document.getElementById('newColorName').value='';
+  document.getElementById('newColorHex').value='';
+  save(); renderColorLibList(); toast('Color added');
+}
+
+function renderSettingList(containerId, arr, key, color){
+  const el=document.getElementById(containerId); if(!el)return;
+  el.innerHTML=arr.map((item,i)=>`
+    <div class="editable-list-item">
+      <span style="color:${color};font-weight:700;min-width:22px;font-size:12px">${i+1}.</span>
+      <input value="${esc(item)}" onchange="updateSettingItem('${key}',${i},this.value)" style="flex:1;border:none;background:transparent;font-size:13px;font-family:inherit;outline:none;color:var(--text)">
+      ${arr.length>1?`<button class="delete-btn" onclick="removeSettingItem('${key}',${i})">× remove</button>`:''}
+    </div>`).join('');
+}
+
+function addCategory(){
+  const val=document.getElementById('newCatInput').value.trim();
+  if(!val)return;
+  DB.settings.categories.push(val);
+  document.getElementById('newCatInput').value='';
+  save(); renderSettings(); toast('Category added');
+}
+function addUnit(){
+  const val=document.getElementById('newUnitInput').value.trim();
+  if(!val)return;
+  DB.settings.units.push(val);
+  document.getElementById('newUnitInput').value='';
+  save(); renderSettings(); toast('Unit added');
+}
+function addStage(){
+  const val=document.getElementById('newStageInput').value.trim();
+  if(!val)return;
+  DB.settings.stages.push(val);
+  document.getElementById('newStageInput').value='';
+  save(); renderSettings(); toast('Stage added — applies to new materials');
+}
+function addCertType(){
+  const val=document.getElementById('newCertTypeInput').value.trim();
+  if(!val)return;
+  DB.settings.certTypes.push(val);
+  document.getElementById('newCertTypeInput').value='';
+  save(); renderSettings(); toast('Cert type added');
+}
+function addFinish(){
+  const val=document.getElementById('newFinishInput').value.trim();
+  if(!val)return;
+  DB.settings.finishTypes.push(val);
+  document.getElementById('newFinishInput').value='';
+  save(); renderSettings(); toast('Finish type added');
+}
+function updateSettingItem(key,idx,val){
+  if(DB.settings[key]) DB.settings[key][idx]=val;
+  save();
+}
+function removeSettingItem(key,idx){
+  if(!confirm('Remove this item?'))return;
+  DB.settings[key].splice(idx,1);
+  save(); renderSettings(); toast('Removed');
+}
+
+// ── PDF EXPORT ────────────────────────────────────────────────────────────────
+function openExportModal(){
+  const stages=getStages(currentId);
+  const rows=stages.map((s,i)=>`
+    <div style="display:grid;grid-template-columns:auto 1fr 120px 130px 130px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #f0f4f8">
+      <div style="width:26px;height:26px;border-radius:50%;background:${s.status==='done'?'var(--green)':getStageColor(i)};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${i+1}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--navy)">${esc(s.name)}</div>
+      <select onchange="updateStageField('${s.id}','status',this.value)" style="border:1.5px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;cursor:pointer">
+        <option value="pending" ${s.status==='pending'?'selected':''}>Pending</option>
+        <option value="done"    ${s.status==='done'   ?'selected':''}>Done</option>
+        <option value="na"      ${s.status==='na'     ?'selected':''}>N/A</option>
+      </select>
+      <input type="date" value="${esc(s.estimatedDate||'')}" placeholder="Est. date"
+        onchange="updateStageField('${s.id}','estimatedDate',this.value)"
+        style="border:1.5px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit">
+      <input type="date" value="${esc(s.date||'')}" placeholder="Actual date"
+        onchange="updateStageField('${s.id}','date',this.value)"
+        style="border:1.5px solid var(--border);border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit">
+    </div>`).join('');
+  document.getElementById('exportStageRows').innerHTML=`
+    <div style="display:grid;grid-template-columns:auto 1fr 120px 130px 130px;gap:8px;padding:6px 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:2px solid var(--border)">
+      <div></div><div>Stage</div><div>Status</div><div>Est. Date</div><div>Actual Date</div>
+    </div>${rows}`;
+  document.getElementById('exportModal').style.display='flex';
+}
+function closeExportModal(){
+  document.getElementById('exportModal').style.display='none';
+}
+function exportPDF(){
+  const m=getMaterial(currentId); if(!m){toast('Not found','error');return;}
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const PW=210,PH=297,M=14;let y=M;
+  doc.setFillColor(13,27,62);doc.rect(0,0,PW,24,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');
+  doc.text('MATERIAL TRACEABILITY REPORT',M,10);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('Generated: '+new Date().toLocaleString()+' | Livio Building Systems',M,18);
+  doc.text('CALIFORNIA DATA CENTER PROJECT',PW-M,18,{align:'right'});y=30;
+  doc.setFillColor(240,244,248);doc.roundedRect(M,y,PW-2*M,46,2,2,'F');
+  doc.setTextColor(13,27,62);doc.setFontSize(13);doc.setFont('helvetica','bold');
+  doc.text(m.name,M+4,y+8);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(107,125,143);
+  const qty=m.qtyRequired?`${m.qtyRequired} ${m.unitRequired||''}`.trim():'—';
+  const meta=[['Category',m.category],['Qty Required',qty],['Qty Ordered',m.qtyOrdered||'—'],['Vendor',m.vendor||'—'],['Finish',m.finishType||'—'],['Color',m.colorName?(m.colorName+(m.colorHex?' '+m.colorHex:'')):(m.colorHex||'—')],['PO Status',m.poStatus||'—'],['Order Date',m.orderDate||'—'],['Exp. Delivery',m.expectedDelivery||'—'],['Act. Delivery',m.actualDelivery||'—'],['Cost',m.cost||'—']];
+  const cw=(PW-2*M-8)/4;
+  meta.forEach(([k,v],i)=>{const col=i%4,row=Math.floor(i/4),cx=M+4+col*cw,cy=y+16+row*12;
+    doc.setFont('helvetica','bold');doc.setTextColor(13,27,62);doc.text(k+':',cx,cy);
+    doc.setFont('helvetica','normal');doc.setTextColor(60,80,110);doc.text(String(v),cx,cy+5);
+  });y+=50;
+  // Final quote
+  const fq=getFinalQuote(currentId);
+  if(fq.length>0){
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(13,27,62);doc.text('FINAL QUOTE',M,y+2);y+=7;
+    doc.autoTable({startY:y,head:[['Description','Qty','Unit Price','Total']],
+      body:fq.map(r=>[r.description,r.qty,r.unitPrice,r.total]),
+      headStyles:{fillColor:[42,122,75],textColor:255,fontSize:8},bodyStyles:{fontSize:8},
+      margin:{left:M,right:M},theme:'grid'});
+    y=doc.lastAutoTable.finalY+8;
+  }
+  const stages=getStages(currentId);
+  doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(13,27,62);doc.text('STATUS PIPELINE',M,y+2);y+=7;
+  doc.autoTable({startY:y,head:[['#','Stage','Status','Est. Date','Actual Date','Notes']],
+    body:stages.map(s=>[
+      s.order+1,
+      s.name,
+      s.status==='done'?'Done':s.status==='na'?'N/A':'Pending',
+      s.estimatedDate||'—',
+      s.date||'—',
+      s.notes||'—'
+    ]),
+    headStyles:{fillColor:[13,27,62],textColor:255,fontSize:8,fontStyle:'bold'},
+    bodyStyles:{fontSize:8,font:'helvetica'},
+    columnStyles:{0:{cellWidth:7},1:{cellWidth:44},2:{cellWidth:18},3:{cellWidth:24},4:{cellWidth:24},5:{cellWidth:59}},
+    didParseCell(d){
+      if(d.column.index===2&&d.section==='body'){
+        if(d.cell.raw==='Done'){d.cell.styles.textColor=[42,122,75];d.cell.styles.fontStyle='bold';}
+        else if(d.cell.raw==='N/A'){d.cell.styles.textColor=[150,150,150];}
+        else{d.cell.styles.textColor=[192,57,43];}
+      }
+      if(d.row.index%2===1&&d.section==='body')d.cell.styles.fillColor=[247,250,253];
+    },
+    margin:{left:M,right:M},theme:'grid'});
+  y=doc.lastAutoTable.finalY+8;
+  const certs=getCerts(currentId);
+  if(y>PH-60){doc.addPage();y=M;}
+  doc.setFontSize(10);doc.setFont('helvetica','bold');doc.text('CERTIFICATIONS',M,y+2);y+=7;
+  if(!certs.length){doc.setFontSize(8);doc.setFont('helvetica','italic');doc.setTextColor(150,150,150);doc.text('None added.',M+2,y+4);y+=12;}
+  else{doc.autoTable({startY:y,head:[['Certification','Type','Status','File','Notes']],
+    body:certs.map(c=>[c.name,c.type||'—',c.status,c.fileData?'✓ Attached':'— None',c.notes||'—']),
+    headStyles:{fillColor:[108,52,131],textColor:255,fontSize:8},bodyStyles:{fontSize:8},
+    didParseCell(d){if(d.column.index===2&&d.section==='body'){const cols={Missing:[192,57,43],Submitted:[180,130,0],Received:[42,122,75],Approved:[42,122,75],Rejected:[192,57,43]};d.cell.styles.textColor=cols[d.cell.raw]||[100,100,100];d.cell.styles.fontStyle='bold';}
+      if(d.row.index%2===1&&d.section==='body')d.cell.styles.fillColor=[247,250,253];},
+    margin:{left:M,right:M},theme:'grid'});
+    y=doc.lastAutoTable.finalY+8;}
+  const notes=getNotes(currentId);
+  if(notes.length>0){if(y>PH-60){doc.addPage();y=M;}
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(13,27,62);doc.text('NOTES',M,y+2);y+=7;
+    doc.autoTable({startY:y,head:[['Date/Time','Author','Note']],body:notes.map(n=>[new Date(n.createdAt).toLocaleString(),n.author||'You',n.text]),
+      headStyles:{fillColor:[192,57,43],textColor:255,fontSize:8},bodyStyles:{fontSize:8},
+      columnStyles:{0:{cellWidth:38},1:{cellWidth:24},2:{cellWidth:120}},
+      didParseCell(d){if(d.row.index%2===1&&d.section==='body')d.cell.styles.fillColor=[247,250,253];},
+      margin:{left:M,right:M},theme:'grid'});}
+  // PO Docs in PDF
+  const poDocs=(m.poDocs||[]);
+  if(poDocs.length>0){
+    if(y>PH-40){doc.addPage();y=M;}
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(13,27,62);doc.text('PURCHASE ORDER DOCUMENTS',M,y+2);y+=7;
+    doc.autoTable({startY:y,head:[['Filename','Type','Uploaded']],
+      body:poDocs.map(d=>[d.filename,(d.fileType||'').toUpperCase(),new Date(d.uploadedAt).toLocaleDateString()]),
+      headStyles:{fillColor:[46,127,217],textColor:255,fontSize:8},bodyStyles:{fontSize:8},
+      didParseCell(d){if(d.row.index%2===1&&d.section==='body')d.cell.styles.fillColor=[247,250,253];},
+      margin:{left:M,right:M},theme:'grid'});
+    y=doc.lastAutoTable.finalY+8;
+  }
+  const pc=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pc;i++){doc.setPage(i);doc.setFillColor(13,27,62);doc.rect(0,PH-10,PW,10,'F');
+    doc.setTextColor(200,214,229);doc.setFontSize(7);doc.setFont('helvetica','normal');
+    doc.text(m.name+' | Livio Building Systems | Confidential',M,PH-4);
+    doc.text('Page '+i+' of '+pc,PW-M,PH-4,{align:'right'});}
+  doc.save((m.name.replace(/[^a-z0-9]/gi,'_'))+'_Report.pdf');
+  toast('PDF exported!');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+initApp();
+</script>
+</body>
+</html>
